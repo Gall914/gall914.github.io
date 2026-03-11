@@ -211,6 +211,77 @@ input::placeholder{color:var(--dim)}
 .del-cancel{border-color:var(--bdr);color:var(--dim)}
 .del-cancel:active{background:rgba(255,255,255,.04)}
 
+/* ── FAB MENU ── */
+#fab-menu{position:absolute;bottom:calc(80px + var(--bot));left:16px;
+  display:none;flex-direction:column;gap:8px;z-index:11}
+#fab-menu.open{display:flex}
+.fab-item{display:flex;align-items:center;gap:10px;
+  background:var(--s1);border:1px solid var(--g2);
+  padding:10px 16px;cursor:pointer;white-space:nowrap;
+  box-shadow:0 4px 16px rgba(0,0,0,.5);transition:background .15s}
+.fab-item:active{background:var(--g3)}
+.fab-item span{font-size:18px}
+.fab-item b{font-family:'VT323',monospace;font-size:18px;color:var(--g0);letter-spacing:2px}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── GROUP INFO PANEL ── */
+#grp-panel{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:600;
+  display:none;align-items:flex-end}
+#grp-panel.open{display:flex}
+.grp-sheet{width:100%;max-width:480px;margin:0 auto;background:var(--s1);
+  border-top:2px solid var(--g1);max-height:88vh;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1)}
+#grp-panel.open .grp-sheet{transform:translateY(0)}
+.grp-sheet-head{flex-shrink:0;padding:16px 16px 10px;border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;gap:12px}
+.grp-sheet-title{font-family:'VT323',monospace;font-size:22px;color:var(--g0);letter-spacing:2px;flex:1}
+.grp-sheet-x{width:36px;height:36px;border:none;background:transparent;
+  color:var(--dim);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.grp-sheet-x:active{color:var(--g0)}
+.grp-sheet-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.grp-av-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.grp-bigav{width:72px;height:72px;border:2px solid var(--g1);background:var(--g4);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'VT323',monospace;font-size:36px;color:var(--g0);
+  overflow:hidden;position:relative;cursor:pointer}
+.grp-bigav img{width:100%;height:100%;object-fit:cover}
+.grp-av-badge{position:absolute;bottom:-4px;right:-4px;width:22px;height:22px;
+  border-radius:50%;background:var(--g0);border:2px solid var(--s1);
+  display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--bg);pointer-events:none}
+.grp-av-inp{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.grp-name-row{display:flex;align-items:center;gap:8px}
+.grp-name-inp{flex:1;background:var(--bg);border:1px solid var(--g3);
+  border-bottom-color:var(--g2);color:var(--g0);
+  font-family:'Share Tech Mono',monospace;font-size:15px;
+  padding:10px 12px;outline:none;caret-color:var(--g0);-webkit-appearance:none;border-radius:0}
+.grp-name-inp:focus{border-color:var(--g1)}
+.grp-save-btn{border:1px solid var(--g1);background:transparent;color:var(--g0);
+  font-family:'VT323',monospace;font-size:17px;letter-spacing:1px;
+  padding:10px 14px;cursor:pointer;white-space:nowrap;-webkit-appearance:none}
+.grp-save-btn:active{background:var(--g3)}
+.grp-members-title{font-size:10px;color:var(--dim);letter-spacing:2px}
+.member-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)}
+.member-av{width:36px;height:36px;flex-shrink:0;border:1px solid var(--g3);background:var(--g4);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'VT323',monospace;font-size:18px;color:var(--g0);overflow:hidden}
+.member-av img{width:100%;height:100%;object-fit:cover}
+.member-nick{flex:1;font-size:13px;color:var(--txt);letter-spacing:1px}
+.member-role{font-size:10px;color:var(--dim);letter-spacing:1px}
+.member-kick{border:1px solid var(--red);background:transparent;color:var(--red);
+  font-size:11px;font-family:'VT323',monospace;letter-spacing:1px;padding:5px 10px;cursor:pointer}
+.member-kick:active{background:rgba(255,64,64,.1)}
+.add-member-btn{display:flex;align-items:center;gap:10px;padding:10px 0;
+  cursor:pointer;color:var(--g1);border:none;background:transparent;
+  font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:1px;width:100%}
+.add-member-btn:active{color:var(--g0)}
+.add-member-btn .am-ico{font-size:20px;width:36px;text-align:center;color:var(--g0)}
+.add-member-form{background:var(--bg);border:1px solid var(--g3);padding:12px;
+  display:none;flex-direction:column;gap:8px}
+.add-member-form.open{display:flex}
+.add-member-row{display:flex;gap:8px}
+.am-status{font-size:11px;min-height:16px}
+.am-status.ok{color:var(--g0)}.am-status.err{color:var(--red)}.am-status.srch{color:var(--amb)}
+
 #fab{position:absolute;bottom:calc(16px + var(--bot));left:16px;
   width:56px;height:56px;background:var(--g0);border:none;color:var(--bg);
   font-size:32px;display:flex;align-items:center;justify-content:center;
@@ -358,9 +429,32 @@ input::placeholder{color:var(--dim)}
 .prof-body{padding:20px;display:flex;flex-direction:column;gap:14px}
 .prof-hero{display:flex;flex-direction:column;align-items:center;gap:10px;
   padding:24px 20px;border:1px solid var(--bdr);background:var(--s1)}
+
+/* ── AVATAR ── */
+.av-wrap{position:relative;cursor:pointer}
 .bigav{width:76px;height:76px;border:2px solid var(--g1);background:var(--g4);
   display:flex;align-items:center;justify-content:center;
-  font-family:'VT323',monospace;font-size:40px;color:var(--g0)}
+  font-family:'VT323',monospace;font-size:40px;color:var(--g0);
+  overflow:hidden;transition:border-color .2s}
+.bigav img{width:100%;height:100%;object-fit:cover;display:block}
+.bigav:hover{border-color:var(--g0)}
+.av-badge{position:absolute;bottom:-4px;right:-4px;
+  width:24px;height:24px;border-radius:50%;
+  background:var(--g0);border:2px solid var(--s1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--bg);pointer-events:none}
+.av-inp{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+/* Chat list small avatars with photo */
+.av{width:44px;height:44px;flex-shrink:0;border:1px solid var(--g2);background:var(--g4);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'VT323',monospace;font-size:22px;color:var(--g0);overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+.c-av{width:38px;height:38px;flex-shrink:0;border:1px solid var(--g2);background:var(--g4);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'VT323',monospace;font-size:18px;color:var(--g0);overflow:hidden}
+.c-av img{width:100%;height:100%;object-fit:cover;display:block}
+
 .pname-big{font-family:'VT323',monospace;font-size:28px;color:var(--g0);letter-spacing:3px}
 .psub{font-size:10px;color:var(--dim);letter-spacing:2px}
 .irow{display:flex;align-items:center;border:1px solid var(--bdr);
@@ -370,10 +464,20 @@ input::placeholder{color:var(--dim)}
 .cpybtn{font-size:15px;color:var(--dim);background:transparent;border:none;cursor:pointer;padding:6px 10px}
 .cpybtn:active{color:var(--g0)}
 
+/* ── PASSWORD TOGGLE ── */
+.pw-wrap{position:relative;display:flex;align-items:center}
+.pw-wrap input{flex:1;padding-right:46px}
+.pw-eye{position:absolute;right:0;top:0;bottom:0;width:44px;
+  background:transparent;border:none;border-left:1px solid var(--g3);
+  color:var(--dim);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:color .15s;-webkit-appearance:none}
+.pw-eye:active{color:var(--g0)}
+
 /* ── MODAL ── */
-#modal{position:fixed;inset:0;background:rgba(0,0,0,.84);z-index:500;
+#modal,#grp-create-modal{position:fixed;inset:0;background:rgba(0,0,0,.84);z-index:500;
   display:none;align-items:flex-end}
-#modal.open{display:flex}
+#modal.open,#grp-create-modal.open{display:flex}
 .msheet{width:100%;max-width:480px;margin:0 auto;background:var(--s1);
   border-top:2px solid var(--g1);padding:20px 20px calc(20px + var(--bot));
   display:flex;flex-direction:column;gap:14px;
@@ -426,7 +530,10 @@ input::placeholder{color:var(--dim)}
             <div style="margin-bottom:11px"><label class="lbl">E-MAIL</label>
               <input type="email" id="l-em" placeholder="user@mail.com" autocomplete="email" autocapitalize="none"></div>
             <div><label class="lbl">ПАРОЛЬ</label>
-              <input type="password" id="l-pw" placeholder="••••••••" autocomplete="current-password"></div>
+              <div class="pw-wrap">
+                <input type="password" id="l-pw" placeholder="••••••••" autocomplete="current-password">
+                <button type="button" class="pw-eye" onclick="togglePw('l-pw',this)" tabindex="-1">👁</button>
+              </div></div>
           </div>
 
           <!-- РЕГИСТРАЦИЯ — шаг 1: данные -->
@@ -436,7 +543,10 @@ input::placeholder{color:var(--dim)}
             <div style="margin-bottom:11px"><label class="lbl">E-MAIL</label>
               <input type="email" id="r-em" placeholder="user@mail.com" autocomplete="email" autocapitalize="none"></div>
             <div><label class="lbl">ПАРОЛЬ (мин. 6 символов)</label>
-              <input type="password" id="r-pw" placeholder="••••••••" autocomplete="new-password"></div>
+              <div class="pw-wrap">
+                <input type="password" id="r-pw" placeholder="••••••••" autocomplete="new-password">
+                <button type="button" class="pw-eye" onclick="togglePw('r-pw',this)" tabindex="-1">👁</button>
+              </div></div>
           </div>
 
           <!-- РЕГИСТРАЦИЯ — шаг 2: код подтверждения -->
@@ -477,17 +587,26 @@ input::placeholder{color:var(--dim)}
           <div class="e-txt">НЕТ ЧАТОВ<br><span style="font-size:10px">нажми + чтобы начать</span></div>
         </div>
       </div>
-      <button id="fab">＋</button>
+      <button id="fab" onclick="toggleFabMenu(event)">＋</button>
+      <!-- FAB меню -->
+      <div id="fab-menu">
+        <div class="fab-item" onclick="event.stopPropagation();openModal();closeFabMenu()" style="animation-delay:.05s">
+          <span>💬</span><b>НОВЫЙ ЧАТ</b>
+        </div>
+        <div class="fab-item" onclick="event.stopPropagation();openGroupCreate();closeFabMenu()" style="animation-delay:0s">
+          <span>👥</span><b>НОВАЯ ГРУППА</b>
+        </div>
+      </div>
     </div>
 
     <!-- ══ CHAT ══ -->
     <div id="s-chat" class="scr">
       <div id="chat-hdr">
         <button class="backbtn" id="backbtn">◀</button>
-        <div class="c-av" id="c-av">?</div>
-        <div class="c-info">
+        <div class="c-av" id="c-av" onclick="onChatAvatarClick()" style="cursor:pointer">?</div>
+        <div class="c-info" onclick="onChatAvatarClick()" style="cursor:pointer;flex:1;min-width:0">
           <div class="c-name" id="c-name">—</div>
-          <div class="c-sub">RETROMESH · REALTIME</div>
+          <div class="c-sub" id="c-sub">RETROMESH · REALTIME</div>
         </div>
       </div>
       <!-- Тулбар удаления сообщений -->
@@ -537,7 +656,11 @@ input::placeholder{color:var(--dim)}
       <div class="shead"><div class="stitle">ПРОФИЛЬ</div></div>
       <div class="prof-body">
         <div class="prof-hero">
-          <div class="bigav" id="pav">?</div>
+          <div class="av-wrap">
+            <div class="bigav" id="pav">?</div>
+            <div class="av-badge">✎</div>
+            <input type="file" class="av-inp" id="av-inp" accept="image/*" onchange="uploadAvatar(this)">
+          </div>
           <div class="pname-big" id="pname">—</div>
           <div class="psub">RETROMESH NETWORK</div>
         </div>
@@ -557,9 +680,10 @@ input::placeholder{color:var(--dim)}
 </div><!-- /shell -->
 
 <!-- MODAL -->
+<!-- MODAL: новый личный чат -->
 <div id="modal">
   <div class="msheet">
-    <div class="mtitle">＋ НОВЫЙ ЧАТ</div>
+    <div class="mtitle">💬 НОВЫЙ ЧАТ</div>
     <div><label class="lbl">НИК СОБЕСЕДНИКА</label>
       <input type="text" id="peer-inp" placeholder="username" maxlength="24"
         autocomplete="off" spellcheck="false" autocapitalize="none" autocorrect="off"></div>
@@ -567,6 +691,66 @@ input::placeholder{color:var(--dim)}
     <div class="mrow">
       <button class="btn" id="modal-ok" style="flex:1">[ НАЙТИ И ОТКРЫТЬ ]</button>
       <button class="btn" id="modal-x" style="flex:0.4;border-color:var(--bdr);color:var(--dim)">[ ✕ ]</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: создать группу -->
+<div id="grp-create-modal">
+  <div class="msheet">
+    <div class="mtitle">👥 НОВАЯ ГРУППА</div>
+    <div><label class="lbl">НАЗВАНИЕ ГРУППЫ</label>
+      <input type="text" id="grp-name-inp-create" placeholder="Название..." maxlength="40"
+        autocomplete="off" spellcheck="false"></div>
+    <div id="grp-create-err" class="errtxt"></div>
+    <div class="mrow">
+      <button class="btn" id="grp-create-ok" style="flex:1">[ СОЗДАТЬ ]</button>
+      <button class="btn" onclick="closeGroupCreate()" style="flex:0.4;border-color:var(--bdr);color:var(--dim)">[ ✕ ]</button>
+    </div>
+  </div>
+</div>
+
+<!-- GROUP INFO PANEL -->
+<div id="grp-panel">
+  <div class="grp-sheet">
+    <div class="grp-sheet-head">
+      <div class="grp-sheet-title" id="gp-title">ГРУППА</div>
+      <button class="grp-sheet-x" onclick="closeGrpPanel()">✕</button>
+    </div>
+    <div class="grp-sheet-body">
+      <!-- Аватарка группы -->
+      <div class="grp-av-wrap">
+        <div class="grp-bigav" id="gp-av">
+          <div class="grp-av-badge">✎</div>
+          <input type="file" class="grp-av-inp" id="gp-av-inp" accept="image/*" onchange="uploadGrpAvatar(this)">
+        </div>
+        <div style="font-size:10px;color:var(--dim);letter-spacing:1px">нажми чтобы сменить</div>
+      </div>
+      <!-- Название -->
+      <div>
+        <div class="grp-members-title" style="margin-bottom:6px">НАЗВАНИЕ</div>
+        <div class="grp-name-row">
+          <input type="text" class="grp-name-inp" id="gp-name-edit" maxlength="40" placeholder="Название группы...">
+          <button class="grp-save-btn" onclick="saveGrpName()">[ OK ]</button>
+        </div>
+      </div>
+      <!-- Участники -->
+      <div>
+        <div class="grp-members-title">УЧАСТНИКИ</div>
+        <div id="gp-members-list"></div>
+        <!-- Добавить участника -->
+        <button class="add-member-btn" onclick="toggleAddMember()">
+          <span class="am-ico">＋</span>Добавить участника
+        </button>
+        <div class="add-member-form" id="add-member-form">
+          <div class="add-member-row">
+            <input type="text" class="grp-name-inp" id="am-inp" placeholder="ник пользователя"
+              maxlength="24" autocomplete="off" autocapitalize="none" spellcheck="false" style="flex:1">
+            <button class="grp-save-btn" onclick="doAddMember()">[ + ]</button>
+          </div>
+          <div class="am-status" id="am-status"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -733,22 +917,24 @@ function doRegister(){
 }
 
 function sendVerifyCode(em){
-  // Генерируем 4-значный код
   verifyCode = String(Math.floor(1000+Math.random()*9000));
-  verifyExpiry = Date.now() + 10*60*1000; // 10 минут
+  verifyExpiry = Date.now() + 10*60*1000;
 
-  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+  const templateParams = {
     to_email: em,
-    code: verifyCode,
-    to_name: pendingReg.nick,
-  }).then(()=>{
-    setBusy(false);
-    showVerifyStep(em);
-  }).catch(e=>{
-    setBusy(false);
-    setErr('⚠ Не удалось отправить письмо: '+e.text);
-    console.error('EmailJS error:', e);
-  });
+    to_name:  pendingReg ? pendingReg.nick : 'пользователь',
+    code:     verifyCode,
+  };
+
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+    .then(()=>{
+      setBusy(false);
+      showVerifyStep(em);
+    }).catch(e=>{
+      setBusy(false);
+      setErr('⚠ Не удалось отправить письмо: '+(e.text||e.message||JSON.stringify(e)));
+      console.error('EmailJS error:', e, 'params:', templateParams);
+    });
 }
 
 function showVerifyStep(em){
@@ -883,12 +1069,21 @@ function authErr(e){
 function enterApp(uid,nick,email){
   ME_UID=uid; ME_NICK=nick;
   setBusy(false); setErr('');
-  $('pav').textContent=ini(nick);
+  $('pav').dataset.nick = nick;
   $('pname').textContent='@'+nick.toUpperCase();
   $('p-nick').textContent='@'+nick;
   $('p-email').textContent=email||'';
   contacts=[]; msgCache={}; listeners={}; unread={};
+  groups={}; groupListeners={}; CUR_GRP='';
+  // Загрузить свою аватарку
+  MY_AVATAR='';
+  loadAvatar(nick, b64=>{
+    MY_AVATAR=b64;
+    if(b64){ $('pav').innerHTML=`<img src="${b64}" alt="av">`; }
+    else   { $('pav').innerHTML=ini(nick); }
+  });
   loadContacts();
+  loadGroups();
   goTo('chats');
   $('bnav').style.display='block';
   toast('✓ @'+nick.toUpperCase(),2000);
@@ -912,16 +1107,19 @@ function loadContacts(){
 function renderList(){
   const list=$('chat-list'),empty=$('empty');
   list.innerHTML='';
-  if(!contacts.length){empty.classList.remove('hide');return}
+  const hasAny = contacts.length>0 || Object.keys(groups).length>0;
+  if(!hasAny){empty.classList.remove('hide');return}
   empty.classList.add('hide');
+
+  // ── Личные чаты ──
   contacts.forEach(peer=>{
     const ch=chid(ME_NICK,peer),msgs=msgCache[ch]||[],last=msgs[msgs.length-1];
-    const prev=last ? prevText(last) : '— нет сообщений —';
+    const prev=last?prevText(last):'— нет сообщений —';
     const row=document.createElement('div');
     row.className='crow';
     const safePeer=peer.replace(/'/g,"\\'");
     row.innerHTML=
-      '<div class="av" data-open="1">'+ini(peer)+'</div>'+
+      '<div class="av" id="lav_'+peer+'" data-open="1">'+ini(peer)+'</div>'+
       '<div class="ci" data-open="1"><div class="cn">@'+esc(peer)+'</div>'+
       '<div class="cp" id="prev_'+peer+'">'+prev+'</div></div>'+
       (unread[peer]?'<div class="badge">'+unread[peer]+'</div>':'')+
@@ -930,6 +1128,31 @@ function renderList(){
         '<button class="c-menu-item" onclick="confirmDeleteChat(\''+safePeer+'\')">&#128465; Удалить чат</button>'+
       '</div>';
     row.querySelectorAll('[data-open]').forEach(el=>{ el.style.cursor='pointer'; el.onclick=()=>openChat(peer); });
+    setAvatarEl(row.querySelector('.av'), peer);
+    list.appendChild(row);
+  });
+
+  // ── Групповые чаты ──
+  Object.entries(groups).forEach(([gid,g])=>{
+    const msgs=msgCache[gid]||[],last=msgs[msgs.length-1];
+    const prevMsg=last?(last.from===ME_NICK?'Вы: ':'@'+last.from+': ')+prevText(last):'— нет сообщений —';
+    const row=document.createElement('div');
+    row.className='crow';
+    const safeGid=gid.replace(/'/g,"\\'");
+    const avHtml=g.avatar?`<img src="${g.avatar}" alt="g">`:'<span>'+grpIni(g.name)+'</span>';
+    row.innerHTML=
+      '<div class="av" style="background:var(--g3);font-size:20px;overflow:hidden">'+avHtml+'</div>'+
+      '<div class="ci" style="cursor:pointer">'+
+        '<div class="cn">'+esc(g.name)+'</div>'+
+        '<div class="cp" id="prev_'+gid+'">'+prevMsg+'</div>'+
+      '</div>'+
+      (unread[gid]?'<div class="badge">'+unread[gid]+'</div>':'')+
+      '<button class="c-dots" onclick="toggleChatMenu(event,\'__g__'+safeGid+'\')">&#8943;</button>'+
+      '<div class="c-menu" id="cmenu___g__'+gid+'">'+
+        '<button class="c-menu-item" onclick="confirmLeaveGroup(\''+safeGid+'\')">&#128465; Покинуть группу</button>'+
+      '</div>';
+    row.querySelector('.ci').onclick=()=>openGroupChat(gid);
+    row.querySelector('.av').onclick=()=>openGroupChat(gid);
     list.appendChild(row);
   });
 }
@@ -994,8 +1217,10 @@ function openChat(peer){
     toast('⚠ Запись отменена (смена чата)',2000);
   }
   CUR_PEER=peer; CUR_CH=chid(ME_NICK,peer); unread[peer]=0;
-  $('c-av').textContent=ini(peer);
+  $('c-av').dataset.nick=peer;
+  $('c-av').innerHTML=ini(peer);
   $('c-name').textContent='@'+peer;
+  loadAvatar(peer, b64=>{ if(b64) $('c-av').innerHTML=`<img src="${b64}" alt="av">`; });
   const ml=$('msglist'); ml.innerHTML='';
   (msgCache[CUR_CH]||[]).forEach(m=>appendMsg(m,false));
   ml.scrollTop=ml.scrollHeight;
@@ -1239,7 +1464,7 @@ function scrollToMsg(id){
 $('sendbtn').onclick=sendText;
 $('msginput').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendText()}};
 function sendText(){
-  const text=$('msginput').value.trim(); if(!text||!CUR_PEER)return;
+  const text=$('msginput').value.trim(); if(!text||!CUR_CH)return;
   $('msginput').value=''; $('msginput').focus();
   const payload={from:ME_NICK,type:'text',text,ts:Date.now()};
   if(replyMsg){ payload.replyTo=replyMsg; cancelReply(); }
@@ -1252,7 +1477,7 @@ function sendText(){
 $('file-inp').onchange=function(){
   const file=this.files[0]; this.value='';
   if(!file)return;
-  if(!CUR_PEER){toast('⚠ Сначала откройте чат');return}
+  if(!CUR_CH){toast('⚠ Сначала откройте чат');return}
 
   const isImage=file.type.startsWith('image/');
   if(isImage) sendImage(file);
@@ -1316,7 +1541,7 @@ function toggleVoice(){
     // Уже идёт запись — нажатие на микрофон = отправить
     sendRec(); return;
   }
-  if(!CUR_PEER){toast('⚠ Сначала откройте чат');return}
+  if(!CUR_CH){toast('⚠ Сначала откройте чат');return}
   startRec();
 }
 
@@ -1497,19 +1722,30 @@ function pushMsg(payload){
 // ════════════════════════════════════════
 $('backbtn').onclick=()=>{
   cancelSelect(); cancelReply();
-  if(mediaRec) cancelRec(); // остановить запись при выходе из чата
-  CUR_PEER='';CUR_CH='';
+  if(mediaRec) cancelRec();
+  CUR_PEER='';CUR_CH='';CUR_GRP='';
   renderList();goTo('chats');
 };
 
 // ════════════════════════════════════════
 //  MODAL — FIND USER
 // ════════════════════════════════════════
-$('fab').onclick=openModal;
 $('modal-x').onclick=closeModal;
 $('modal').onclick=e=>{if(e.target===$('modal'))closeModal()};
 $('peer-inp').onkeydown=e=>{if(e.key==='Enter')searchUser()};
 $('modal-ok').onclick=searchUser;
+
+// ════════════════════════════════════════
+//  FAB MENU
+// ════════════════════════════════════════
+function toggleFabMenu(e){
+  e.stopPropagation();
+  $('fab-menu').classList.toggle('open');
+}
+function closeFabMenu(){ $('fab-menu').classList.remove('open'); }
+document.addEventListener('click', e=>{
+  if(!$('fab-menu').contains(e.target)&&e.target.id!=='fab') closeFabMenu();
+});
 
 function openModal(){$('peer-inp').value='';setMS('','');$('modal').classList.add('open');setTimeout(()=>$('peer-inp').focus(),340)}
 function closeModal(){$('modal').classList.remove('open')}
@@ -1546,6 +1782,262 @@ function addContact(peerNick,peerUid){
 }
 
 // ════════════════════════════════════════
+//  GROUPS
+// ════════════════════════════════════════
+// Firebase структура:
+//   groups/{gid} = {name, creator, created, avatar?}
+//   groups/{gid}/members/{nick} = nick
+//   chats/{gid}/msgs/{msgId} = {...}
+//   groupContacts/{uid}/{gid} = gid   (мои группы)
+
+let groups = {};       // {gid: {name, creator, members:{nick:nick}, avatar}}
+let groupListeners = {}; // {gid: true}
+let CUR_GRP = '';      // gid текущей открытой группы (если это группа)
+
+// -- Создание группы --
+function openGroupCreate(){
+  $('grp-name-inp-create').value='';
+  $('grp-create-err').textContent='';
+  $('grp-create-modal').classList.add('open');
+  setTimeout(()=>$('grp-name-inp-create').focus(),340);
+}
+function closeGroupCreate(){
+  $('grp-create-modal').classList.remove('open');
+}
+$('grp-name-inp-create').onkeydown=e=>{ if(e.key==='Enter') doCreateGroup(); };
+$('grp-create-ok').onclick=doCreateGroup;
+$('grp-create-modal').onclick=e=>{ if(e.target===$('grp-create-modal')) closeGroupCreate(); };
+
+function doCreateGroup(){
+  const name=$('grp-name-inp-create').value.trim();
+  if(!name){ $('grp-create-err').textContent='⚠ Введите название'; return; }
+  $('grp-create-ok').disabled=true;
+  const gid = 'g_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  const upd={};
+  upd[`groups/${gid}/info`]={name, creator:ME_NICK, created:Date.now()};
+  upd[`groups/${gid}/members/${ME_NICK}`]=ME_NICK;
+  upd[`groupContacts/${ME_UID}/${gid}`]=gid;
+  db.ref().update(upd).then(()=>{
+    $('grp-create-ok').disabled=false;
+    closeGroupCreate();
+    loadGroup(gid, ()=>openGroupChat(gid));
+    toast('✓ Группа создана',2000);
+  }).catch(e=>{ $('grp-create-ok').disabled=false; $('grp-create-err').textContent='⚠ '+e.message; });
+}
+
+// -- Загрузка групп при входе --
+function loadGroups(){
+  db.ref('groupContacts/'+ME_UID).on('child_added', snap=>{
+    const gid=snap.val(); if(!gid)return;
+    loadGroup(gid);
+  });
+}
+
+function loadGroup(gid, cb){
+  if(groups[gid]){ if(cb)cb(); return; }
+  db.ref('groups/'+gid).once('value').then(snap=>{
+    const d=snap.val(); if(!d)return;
+    groups[gid]={
+      name: d.info?.name||'Группа',
+      creator: d.info?.creator||'',
+      avatar: d.info?.avatar||'',
+      members: d.members||{}
+    };
+    if(!msgCache[gid]) msgCache[gid]=[];
+    listenGroupMsgs(gid);
+    renderList();
+    if(cb) cb();
+  });
+  // Слушать изменения инфо группы (смена названия, аватара, участников)
+  db.ref('groups/'+gid+'/info').on('value', snap=>{
+    const d=snap.val(); if(!d||!groups[gid])return;
+    groups[gid].name=d.name||groups[gid].name;
+    groups[gid].avatar=d.avatar||'';
+    renderList();
+    if(CUR_GRP===gid){
+      $('c-name').textContent=groups[gid].name;
+      if(groups[gid].avatar) $('c-av').innerHTML=`<img src="${groups[gid].avatar}" alt="g">`;
+      else $('c-av').innerHTML=grpIni(groups[gid].name);
+    }
+  });
+  db.ref('groups/'+gid+'/members').on('child_added', snap=>{
+    const nick=snap.val(); if(!nick)return;
+    if(groups[gid]) groups[gid].members[nick]=nick;
+    renderList();
+  });
+  db.ref('groups/'+gid+'/members').on('child_removed', snap=>{
+    const nick=snap.key; if(!nick||!groups[gid])return;
+    delete groups[gid].members[nick];
+    renderList();
+    // Если нас выгнали — уходим
+    if(nick===ME_NICK){ delete groups[gid]; toast('⚠ Вас удалили из группы',3000); renderList(); }
+  });
+}
+
+function listenGroupMsgs(gid){
+  if(groupListeners[gid])return;
+  groupListeners[gid]=true;
+  if(!msgCache[gid]) msgCache[gid]=[];
+  db.ref('chats/'+gid+'/msgs').orderByChild('ts').on('child_added', snap=>{
+    const d=snap.val(); if(!d)return;
+    const id=snap.key;
+    if(msgCache[gid].some(m=>m.id===id))return;
+    const msg={id,from:d.from||'',type:d.type||'text',text:d.text||'',
+      data:d.data||'',fname:d.fname||'',fsize:d.fsize||0,dur:d.dur||0,
+      replyTo:d.replyTo||null,ts:d.ts||0};
+    msgCache[gid].push(msg);
+    msgCache[gid].sort((a,b)=>a.ts-b.ts);
+    const g=groups[gid];
+    if(g){
+      const prev=document.getElementById('prev_'+gid);
+      if(prev) prev.textContent=(msg.from===ME_NICK?'Вы: ':('@'+msg.from+': '))+prevText(msg);
+    }
+    if(CUR_GRP===gid){ appendMsg(msg); }
+    else if(msg.from!==ME_NICK){ unread[gid]=(unread[gid]||0)+1; renderList(); }
+  });
+}
+
+// -- Открыть групповой чат --
+function openGroupChat(gid){
+  cancelSelect(); cancelReply();
+  if(mediaRec) cancelRec();
+  CUR_PEER=''; CUR_GRP=gid; CUR_CH=gid; unread[gid]=0;
+  const g=groups[gid]; if(!g)return;
+  $('c-name').textContent=g.name;
+  $('c-sub').textContent='ГРУППА · '+Object.keys(g.members).length+' уч.';
+  if(g.avatar){ $('c-av').innerHTML=`<img src="${g.avatar}" alt="g">`; }
+  else { $('c-av').innerHTML=grpIni(g.name); }
+  const ml=$('msglist'); ml.innerHTML='';
+  (msgCache[gid]||[]).forEach(m=>appendMsg(m,false));
+  ml.scrollTop=ml.scrollHeight;
+  goTo('chat');
+  setTimeout(()=>$('msginput').focus(),380);
+}
+
+function grpIni(name){ return (name||'G')[0].toUpperCase(); }
+
+// -- Клик по аватарке/имени в хедере чата --
+function onChatAvatarClick(){
+  if(CUR_GRP) openGrpPanel(CUR_GRP);
+}
+
+// ── Group info panel ──
+let panelGid='';
+function openGrpPanel(gid){
+  panelGid=gid;
+  const g=groups[gid]; if(!g)return;
+  $('gp-title').textContent=g.name.toUpperCase();
+  $('gp-name-edit').value=g.name;
+  // Аватарка
+  const av=$('gp-av');
+  if(g.avatar){ av.innerHTML=`<img src="${g.avatar}" alt="g"><div class="grp-av-badge">✎</div><input type="file" class="grp-av-inp" accept="image/*" onchange="uploadGrpAvatar(this)">`; }
+  else { av.innerHTML=`<span style="font-size:36px;color:var(--g0)">${grpIni(g.name)}</span><div class="grp-av-badge">✎</div><input type="file" class="grp-av-inp" accept="image/*" onchange="uploadGrpAvatar(this)">`; }
+  renderMembersList(gid);
+  $('add-member-form').classList.remove('open');
+  $('am-status').textContent=''; $('am-inp').value='';
+  $('grp-panel').classList.add('open');
+}
+
+function closeGrpPanel(){
+  $('grp-panel').classList.remove('open');
+  panelGid='';
+}
+$('grp-panel').onclick=e=>{ if(e.target===$('grp-panel')) closeGrpPanel(); };
+
+function renderMembersList(gid){
+  const g=groups[gid]; if(!g)return;
+  const list=$('gp-members-list'); list.innerHTML='';
+  Object.keys(g.members).forEach(nick=>{
+    const isMe=nick===ME_NICK;
+    const isCreator=nick===g.creator;
+    const row=document.createElement('div');
+    row.className='member-row';
+    row.innerHTML=`<div class="member-av" id="mav_${nick}">${ini(nick)}</div>
+      <div class="member-nick">@${esc(nick)}${isCreator?' <span style="color:var(--g2);font-size:10px">★ создатель</span>':''}</div>
+      ${isMe?'<span class="member-role">вы</span>':
+        (ME_NICK===g.creator?`<button class="member-kick" onclick="kickMember('${gid}','${nick}')">удалить</button>`:'')
+      }`;
+    list.appendChild(row);
+    // Аватарка участника
+    loadAvatar(nick, b64=>{ const el=document.getElementById('mav_'+nick); if(el&&b64) el.innerHTML=`<img src="${b64}" alt="av">`; });
+  });
+}
+
+function saveGrpName(){
+  const name=$('gp-name-edit').value.trim();
+  if(!name||!panelGid){toast('⚠ Введите название');return}
+  db.ref('groups/'+panelGid+'/info/name').set(name).then(()=>{
+    groups[panelGid].name=name;
+    $('gp-title').textContent=name.toUpperCase();
+    toast('✓ Название сохранено',1500);
+  }).catch(e=>toast('⚠ '+e.message));
+}
+
+function uploadGrpAvatar(input){
+  const file=input.files[0]; input.value=''; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      const SIZE=200,c=document.createElement('canvas');
+      c.width=SIZE; c.height=SIZE;
+      const ctx=c.getContext('2d');
+      const side=Math.min(img.width,img.height);
+      ctx.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,SIZE,SIZE);
+      const b64=c.toDataURL('image/jpeg',0.82);
+      if(b64.length>80*1024){toast('⚠ Фото слишком большое');return}
+      db.ref('groups/'+panelGid+'/info/avatar').set(b64).then(()=>{
+        groups[panelGid].avatar=b64;
+        openGrpPanel(panelGid); // перерендер панели
+        toast('✓ Аватарка обновлена',1500);
+      }).catch(e=>toast('⚠ '+e.message));
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function toggleAddMember(){
+  $('add-member-form').classList.toggle('open');
+  if($('add-member-form').classList.contains('open')) setTimeout(()=>$('am-inp').focus(),100);
+}
+
+function setAMS(m,c){ const e=$('am-status');e.textContent=m;e.className='am-status '+(c||''); }
+
+function doAddMember(){
+  const nick=$('am-inp').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
+  if(!nick){setAMS('⚠ Введите ник','err');return}
+  if(nick===ME_NICK){setAMS('⚠ Это вы','err');return}
+  if(!panelGid){return}
+  const g=groups[panelGid];
+  if(g&&g.members[nick]){setAMS('⚠ Уже в группе','err');return}
+  setAMS('⏳ Поиск…','srch');
+  db.ref('users/'+nick).once('value').then(snap=>{
+    if(!snap.exists()){setAMS('⚠ @'+nick+' не найден','err');return}
+    const uid=snap.val().uid;
+    const upd={};
+    upd[`groups/${panelGid}/members/${nick}`]=nick;
+    upd[`groupContacts/${uid}/${panelGid}`]=panelGid;
+    return db.ref().update(upd).then(()=>{
+      if(g) g.members[nick]=nick;
+      setAMS('✓ @'+nick+' добавлен!','ok');
+      $('am-inp').value='';
+      renderMembersList(panelGid);
+      $('c-sub').textContent='ГРУППА · '+Object.keys(g?.members||{}).length+' уч.';
+      setTimeout(()=>setAMS('',''),2000);
+    });
+  }).catch(e=>setAMS('⚠ '+e.message,'err'));
+}
+$('am-inp').onkeydown=e=>{if(e.key==='Enter')doAddMember()};
+
+function kickMember(gid, nick){
+  if(!confirm('Удалить @'+nick+' из группы?'))return;
+  db.ref('groups/'+gid+'/members/'+nick).remove()
+    .then(()=>{ toast('Удалён @'+nick,1500); renderMembersList(gid); })
+    .catch(e=>toast('⚠ '+e.message));
+}
+
+// ════════════════════════════════════════
 //  УДАЛЕНИЕ ЧАТА
 // ════════════════════════════════════════
 function toggleChatMenu(e, peer){
@@ -1565,26 +2057,31 @@ function confirmDeleteChat(peer){
 }
 
 function deleteChat(peer){
-  // Удаляем только у себя: убираем из contacts и msgCache
-  // Отписываемся от Firebase-слушателя
   const ch=chid(ME_NICK,peer);
-  if(listeners[ch]){
-    db.ref('chats/'+ch+'/msgs').off();
-    delete listeners[ch];
-  }
-  // Убираем из локального contacts
+  if(listeners[ch]){ db.ref('chats/'+ch+'/msgs').off(); delete listeners[ch]; }
   contacts=contacts.filter(c=>c!==peer);
-  delete msgCache[ch];
-  delete unread[peer];
-
-  // Удаляем запись контакта в Firebase только у себя
+  delete msgCache[ch]; delete unread[peer];
   db.ref('contacts/'+ME_UID+'/'+peer).remove();
-
-  // Если сейчас открыт этот чат — уходим назад
   if(CUR_PEER===peer){ CUR_PEER=''; CUR_CH=''; goTo('chats'); }
+  renderList(); toast('Чат с @'+peer+' удалён');
+}
 
-  renderList();
-  toast('Чат с @'+peer+' удалён');
+function confirmLeaveGroup(gid){
+  document.querySelectorAll('.c-menu.open').forEach(m=>m.classList.remove('open'));
+  const g=groups[gid]; if(!g)return;
+  if(!confirm('Покинуть группу «'+g.name+'»?')) return;
+  // Убираем себя из участников и из groupContacts
+  const upd={};
+  upd['groups/'+gid+'/members/'+ME_NICK]=null;
+  upd['groupContacts/'+ME_UID+'/'+gid]=null;
+  db.ref().update(upd).then(()=>{
+    if(groupListeners[gid]){ db.ref('chats/'+gid+'/msgs').off(); delete groupListeners[gid]; }
+    db.ref('groups/'+gid+'/info').off();
+    db.ref('groups/'+gid+'/members').off();
+    delete groups[gid]; delete msgCache[gid]; delete unread[gid];
+    if(CUR_GRP===gid){ CUR_GRP=''; CUR_CH=''; CUR_PEER=''; goTo('chats'); }
+    renderList(); toast('Вы покинули группу');
+  }).catch(e=>toast('⚠ '+e.message));
 }
 
 // ════════════════════════════════════════
@@ -1652,6 +2149,98 @@ function deleteSelected(){
 }
 
 // ════════════════════════════════════════
+//  PASSWORD VISIBILITY TOGGLE
+// ════════════════════════════════════════
+function togglePw(inputId, btn){
+  const inp=$(inputId);
+  const show = inp.type==='password';
+  inp.type = show ? 'text' : 'password';
+  btn.textContent = show ? '🙈' : '👁';
+  btn.style.color = show ? 'var(--g1)' : 'var(--dim)';
+}
+
+// ════════════════════════════════════════
+//  AVATAR
+// ════════════════════════════════════════
+let MY_AVATAR = ''; // base64 текущего пользователя
+const avatarCache = {}; // {nick: base64}
+
+function uploadAvatar(input){
+  const file = input.files[0]; input.value='';
+  if(!file) return;
+  if(!file.type.startsWith('image/')) { toast('⚠ Только изображения'); return; }
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      // Сжимаем до 200x200
+      const SIZE = 200;
+      const c = document.createElement('canvas');
+      c.width = SIZE; c.height = SIZE;
+      const ctx = c.getContext('2d');
+      // Crop по центру
+      const side = Math.min(img.width, img.height);
+      const sx = (img.width - side) / 2;
+      const sy = (img.height - side) / 2;
+      ctx.drawImage(img, sx, sy, side, side, 0, 0, SIZE, SIZE);
+      const b64 = c.toDataURL('image/jpeg', 0.82);
+      if(b64.length > 80*1024) { toast('⚠ Фото слишком большое, попробуй другое'); return; }
+      saveAvatar(b64);
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveAvatar(b64){
+  if(!ME_UID) return;
+  db.ref('avatars/'+ME_NICK).set(b64)
+    .then(()=>{
+      MY_AVATAR = b64;
+      avatarCache[ME_NICK] = b64;
+      applyAvatar('pav', b64);
+      // Обновить маленькие аватарки в чат-листе
+      renderList();
+      toast('✓ Аватарка обновлена', 2000);
+    })
+    .catch(e => toast('⚠ '+e.message));
+}
+
+function applyAvatar(elId, b64){
+  const el = $(elId); if(!el) return;
+  if(b64){
+    el.innerHTML = `<img src="${b64}" alt="av">`;
+  } else {
+    // Восстановить инициалы
+    const nick = el.dataset.nick || ME_NICK || '?';
+    el.innerHTML = ini(nick);
+  }
+}
+
+function loadAvatar(nick, callback){
+  if(avatarCache[nick] !== undefined){ callback(avatarCache[nick]); return; }
+  db.ref('avatars/'+nick).once('value').then(s=>{
+    const v = s.val() || '';
+    avatarCache[nick] = v;
+    callback(v);
+  }).catch(()=>{ avatarCache[nick]=''; callback(''); });
+}
+
+function setAvatarEl(el, nick){
+  if(!el) return;
+  el.dataset.nick = nick;
+  if(avatarCache[nick]){
+    el.innerHTML = avatarCache[nick] ? `<img src="${avatarCache[nick]}" alt="av">` : ini(nick);
+  } else {
+    el.innerHTML = ini(nick);
+    loadAvatar(nick, b64=>{
+      if(b64) el.innerHTML = `<img src="${b64}" alt="av">`;
+    });
+  }
+}
+
+// ════════════════════════════════════════
 //  PROFILE
 // ════════════════════════════════════════
 $('cpybtn').onclick=()=>{
@@ -1663,8 +2252,11 @@ $('logoutbtn').onclick=()=>{
   Object.keys(listeners).forEach(ch=>db.ref('chats/'+ch+'/msgs').off());
   if(ME_UID)db.ref('contacts/'+ME_UID).off();
   auth.signOut().then(()=>{
-    ME_UID='';ME_NICK='';CUR_PEER='';CUR_CH='';
+    ME_UID='';ME_NICK='';CUR_PEER='';CUR_CH='';CUR_GRP='';
+    MY_AVATAR='';
     contacts=[];msgCache={};listeners={};unread={};
+    groups={};groupListeners={};
+    Object.keys(avatarCache).forEach(k=>delete avatarCache[k]);
     $('bnav').style.display='none';
     $('l-em').value='';$('l-pw').value='';
     setErr('');setBusy(false);switchTab('l');goTo('login');
