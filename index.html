@@ -6,7 +6,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RetroMesh">
+<meta name="application-name" content="RetroMesh">
 <meta name="theme-color" content="#050805">
+<meta name="description" content="RetroMesh — защищённый ретро-мессенджер">
+<link rel="manifest" href="manifest.json">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23050805'/><text y='.85em' font-size='80' fill='%2333ff00' text-anchor='middle' x='50'>◈</text></svg>">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23050805'/><text y='.85em' font-size='80' fill='%2333ff00' text-anchor='middle' x='50'>◈</text></svg>">
 <style>
@@ -339,6 +343,65 @@ input::placeholder{color:var(--dim)}
 .mg.them{align-self:flex-start;align-items:flex-start}
 @keyframes pop{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:scale(1)}}
 
+/* ── CALLS ── */
+#call-screen{position:fixed;inset:0;z-index:1500;background:#000;
+  display:none;flex-direction:column}
+#call-screen.show{display:flex}
+/* Видео фон — удалённый собеседник */
+#call-video-remote{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;background:#111;display:block}
+/* Своё видео — маленький пикчер-ин-пикчер */
+#call-video-local{position:absolute;top:calc(var(--top)+12px);right:12px;
+  width:90px;height:120px;object-fit:cover;border-radius:12px;
+  border:2px solid var(--g2);background:#222;z-index:2;
+  transform:scaleX(-1); /* зеркалим selfie */
+  display:none}
+/* Оверлей поверх видео */
+#call-overlay{position:absolute;inset:0;z-index:3;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:space-between;padding:calc(var(--top)+24px) 0 calc(var(--bot)+24px)}
+/* Верхняя часть — имя и статус */
+.call-top{display:flex;flex-direction:column;align-items:center;gap:10px}
+.call-avatar{width:88px;height:88px;border-radius:50%;background:var(--g3);
+  border:3px solid var(--g1);display:flex;align-items:center;justify-content:center;
+  font-family:'VT323',monospace;font-size:38px;color:var(--g0);overflow:hidden;
+  animation:callpulse 2s infinite}
+.call-avatar.has-video{display:none} /* скрываем если есть видео */
+@keyframes callpulse{0%,100%{box-shadow:0 0 0 0 rgba(51,255,0,.4)}
+  50%{box-shadow:0 0 0 16px rgba(51,255,0,0)}}
+.call-name{font-family:'VT323',monospace;font-size:26px;color:#fff;
+  letter-spacing:3px;text-shadow:0 1px 8px rgba(0,0,0,.8)}
+.call-status{font-size:11px;color:rgba(255,255,255,.7);letter-spacing:2px}
+.call-timer{font-family:'VT323',monospace;font-size:20px;color:var(--g1);
+  letter-spacing:2px;display:none}
+/* Кнопки */
+.call-btns{display:flex;gap:20px;align-items:center}
+.call-btn{width:62px;height:62px;border-radius:50%;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  transition:transform .15s;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+.call-btn:active{transform:scale(.85)}
+.call-btn-end{background:#e53935}
+.call-btn-accept{background:#43a047}
+.call-btn-icon{background:rgba(255,255,255,.15);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.2);color:#fff;font-size:20px}
+.call-btn-icon.off{background:rgba(255,64,64,.4);border-color:rgba(255,64,64,.6)}
+/* Кнопка звонка в хедере */
+.call-hdr-btn{background:transparent;border:none;color:var(--g0);font-size:18px;
+  cursor:pointer;padding:6px;opacity:.8;transition:opacity .15s}
+.call-hdr-btn:active{opacity:.5}
+/* Входящий звонок — мини баннер */
+#incoming-banner{position:fixed;top:calc(var(--top)+8px);left:50%;
+  transform:translateX(-50%);z-index:1600;
+  background:var(--s1);border:1px solid var(--g1);
+  padding:10px 16px;display:none;align-items:center;gap:12px;
+  box-shadow:0 4px 24px rgba(0,0,0,.7);min-width:260px;max-width:90vw}
+#incoming-banner.show{display:flex}
+#incoming-banner .ib-name{font-family:'VT323',monospace;font-size:18px;
+  color:var(--g0);letter-spacing:1px;flex:1}
+#incoming-banner .ib-sub{font-size:10px;color:var(--dim);letter-spacing:1px}
+/* Кнопка видеозвонка в хедере */
+.call-hdr-btn.video{font-size:16px}
+
 /* ── READ RECEIPTS ── */
 .meta{font-size:10px;color:var(--dim);padding:0 3px;display:flex;align-items:center;gap:4px}
 .ticks{font-size:12px;line-height:1;color:var(--dim);letter-spacing:-2px}
@@ -424,23 +487,78 @@ input::placeholder{color:var(--dim)}
 .pin-close{font-size:16px;color:var(--dim);cursor:pointer;padding:0 4px}
 
 /* ── VIDEO MESSAGE (DIAMOND) ── */
-.vmsg-wrap{position:relative;width:160px;height:160px;cursor:pointer;flex-shrink:0;
-  transition:width .3s ease,height .3s ease}
-.vmsg-wrap.vmsg-playing{width:260px;height:200px}
-.vmsg-diamond{width:100%;height:100%;overflow:hidden;
+.vmsg-wrap{
+  position:relative;width:180px;height:200px;
+  cursor:pointer;flex-shrink:0;margin:2px 0;
+  /* Отдельный compositing layer — видео рендерится правильно */
+  isolation:isolate;
+}
+.vmsg-diamond-border{
+  position:absolute;top:0;left:0;width:180px;height:180px;
   clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
-  background:var(--g4)}
-.vmsg-diamond.playing{clip-path:none !important;border-radius:8px}
-.vmsg-diamond video{width:100%;height:100%;object-fit:contain;display:block;
-  background:#000}
-.vmsg-thumb{width:100%;height:100%;object-fit:cover;display:block}
-.vmsg-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  font-size:28px;color:#fff;text-shadow:0 0 12px rgba(0,0,0,.8);
-  pointer-events:none;transition:opacity .2s}
-.vmsg-playing .vmsg-play{opacity:0}
-.vmsg-dur{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
-  font-family:'VT323',monospace;font-size:13px;color:#fff;
-  text-shadow:0 0 6px rgba(0,0,0,.9);letter-spacing:1px;pointer-events:none}
+  background:linear-gradient(135deg,var(--g1),var(--g3));
+  transition:clip-path .4s cubic-bezier(.4,0,.2,1);
+  z-index:0;
+}
+.vmsg-wrap.open .vmsg-diamond-border{
+  clip-path:polygon(0% 0%,100% 0%,100% 100%,0% 100%);
+  border-radius:10px;
+}
+.vmsg-diamond{
+  position:absolute;top:3px;left:3px;width:174px;height:174px;
+  clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+  overflow:hidden;background:var(--g4);
+  transition:clip-path .4s cubic-bezier(.4,0,.2,1),
+             top .4s cubic-bezier(.4,0,.2,1),
+             left .4s cubic-bezier(.4,0,.2,1),
+             width .4s cubic-bezier(.4,0,.2,1),
+             height .4s cubic-bezier(.4,0,.2,1);
+  z-index:1;
+  /* Принудительный GPU слой для видео */
+  transform:translateZ(0);
+  -webkit-transform:translateZ(0);
+  will-change:clip-path;
+}
+.vmsg-wrap.open .vmsg-diamond{
+  clip-path:polygon(0% 0%,100% 0%,100% 100%,0% 100%);
+  top:0;left:0;width:180px;height:180px;
+}
+.vmsg-wrap.open{width:220px;height:190px;}
+.vmsg-wrap.open .vmsg-diamond-border{width:220px;height:180px;}
+.vmsg-wrap.open .vmsg-diamond{width:214px;height:174px;}
+.vmsg-diamond video{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transform:translateZ(0);-webkit-transform:translateZ(0);
+}
+.vmsg-thumb-ph{
+  width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--g4);
+}
+.vmsg-play{
+  position:absolute;top:87px;left:90px;
+  transform:translate(-50%,-50%);
+  width:46px;height:46px;border-radius:50%;
+  background:rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:#fff;z-index:4;pointer-events:none;
+  transition:opacity .25s;padding-left:3px;
+}
+.vmsg-wrap.open .vmsg-play{opacity:0}
+/* Overlay */
+#vid-overlay{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.92);
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#vid-overlay-el{max-width:min(92vw,480px);max-height:70vh;border-radius:12px;background:#000}
+#vid-overlay-close{font-family:'VT323',monospace;font-size:18px;color:var(--g0);
+  background:transparent;border:1px solid var(--g2);padding:8px 32px;
+  cursor:pointer;letter-spacing:2px}
+#vid-overlay-close:active{background:var(--g3)}
+.vmsg-dur{
+  position:absolute;bottom:2px;left:50%;
+  transform:translateX(-50%);
+  font-family:'VT323',monospace;font-size:12px;
+  color:var(--dim);letter-spacing:1px;pointer-events:none;
+}
 /* Video rec preview */
 #vido-preview-wrap{display:none;align-items:center;justify-content:center;
   padding:10px;border-top:1px solid var(--bdr);background:var(--s1)}
@@ -765,6 +883,8 @@ input::placeholder{color:var(--dim)}
           </div>
           <div class="c-sub" id="c-sub">RETROMESH · REALTIME</div>
         </div>
+        <button class="call-hdr-btn" id="call-btn" onclick="startCall(false)" title="Аудиозвонок">📞</button>
+        <button class="call-hdr-btn video" id="vcall-btn" onclick="startCall(true)" title="Видеозвонок">📹</button>
         <button class="backbtn" onclick="toggleSearchBar()" title="Поиск" style="font-size:16px">🔍</button>
       </div>
       <!-- Search bar -->
@@ -963,7 +1083,56 @@ input::placeholder{color:var(--dim)}
 
 <div id="readby-popup"><div class="rb-title">ПРОЧИТАЛИ</div><div id="readby-list"></div></div>
 
-<!-- REACTION PICKER -->
+<!-- INCOMING CALL BANNER -->
+<div id="incoming-banner">
+  <div>
+    <div class="ib-name" id="ib-name">—</div>
+    <div class="ib-sub">ВХОДЯЩИЙ ЗВОНОК ◈</div>
+  </div>
+  <button class="call-btn call-btn-accept" style="width:44px;height:44px;font-size:18px" onclick="acceptCall()">📞</button>
+  <button class="call-btn call-btn-end" style="width:44px;height:44px;font-size:18px" onclick="rejectCall()">✕</button>
+</div>
+
+<!-- CALL SCREEN -->
+<div id="call-screen">
+  <!-- Видео удалённого собеседника — фон -->
+  <video id="call-video-remote" autoplay playsinline></video>
+  <!-- Своё видео — pip -->
+  <video id="call-video-local" autoplay playsinline muted></video>
+  <!-- Аудио -->
+  <audio id="call-audio" autoplay playsinline style="display:none"></audio>
+
+  <!-- Оверлей -->
+  <div id="call-overlay">
+    <div class="call-top">
+      <div class="call-avatar" id="call-av">?</div>
+      <div class="call-name" id="call-name">—</div>
+      <div class="call-status" id="call-status">СОЕДИНЕНИЕ...</div>
+      <div class="call-timer" id="call-timer">0:00</div>
+    </div>
+
+    <!-- Кнопки входящего -->
+    <div class="call-btns" id="call-btns-incoming" style="display:none">
+      <button class="call-btn call-btn-end" onclick="rejectCall()">📵</button>
+      <button class="call-btn call-btn-accept" onclick="acceptCall(false)">📞</button>
+      <button class="call-btn call-btn-accept" style="background:#1565c0" onclick="acceptCall(true)">📹</button>
+    </div>
+
+    <!-- Кнопки исходящего -->
+    <div class="call-btns" id="call-btns-outgoing" style="display:none">
+      <button class="call-btn call-btn-end" onclick="endCall()">📵</button>
+    </div>
+
+    <!-- Кнопки активного звонка -->
+    <div class="call-btns" id="call-btns-active" style="display:none">
+      <button class="call-btn call-btn-icon" id="call-mic-btn" onclick="toggleCallMic()">🎤</button>
+      <button class="call-btn call-btn-icon" id="call-cam-btn" onclick="toggleCallCam()">📹</button>
+      <button class="call-btn call-btn-end" onclick="endCall()">📵</button>
+    </div>
+  </div>
+</div>
+
+
 <div id="react-picker">
   <div class="react-opt" onclick="pickReaction('👍')">👍</div>
   <div class="react-opt" onclick="pickReaction('❤️')">❤️</div>
@@ -995,9 +1164,9 @@ input::placeholder{color:var(--dim)}
 </div>
 
 <!-- VIDEO OVERLAY -->
-<div id="vid-overlay" style="display:none;position:fixed;inset:0;z-index:2000;background:#000;flex-direction:column;align-items:center;justify-content:center">
-  <video id="vid-overlay-el" controls playsinline style="max-width:100%;max-height:85vh;background:#000"></video>
-  <button onclick="closeVidOverlay()" style="margin-top:16px;font-family:'VT323',monospace;font-size:18px;color:var(--g0);background:transparent;border:1px solid var(--g2);padding:8px 24px;cursor:pointer;letter-spacing:2px">[ ЗАКРЫТЬ ]</button>
+<div id="vid-overlay" style="display:none">
+  <video id="vid-overlay-el" controls playsinline></video>
+  <button id="vid-overlay-close" onclick="closeVidOverlay()">[ ЗАКРЫТЬ ]</button>
 </div>
 
 <!-- LIGHTBOX -->
@@ -1320,6 +1489,7 @@ function enterApp(uid,nick,email){
   groups={}; groupListeners={}; CUR_GRP='';
   startPresence();
   initStatusField();
+  listenIncomingCalls();
   // Загрузить свою аватарку
   MY_AVATAR='';
   loadAvatar(nick, b64=>{
@@ -1420,6 +1590,13 @@ function prevText(m){
   return esc(m.text||'').slice(0,40);
 }
 
+function scrollToBottom(el){
+  const e=el||$('msglist');
+  e.scrollTop=e.scrollHeight+9999;
+  // Повторно после layout — для случаев с изображениями
+  requestAnimationFrame(()=>{ e.scrollTop=e.scrollHeight+9999; });
+}
+
 // ════════════════════════════════════════
 //  LISTEN MESSAGES  ← главный слушатель
 // ════════════════════════════════════════
@@ -1489,6 +1666,8 @@ function openChat(peer){
   $('c-av').innerHTML=`${ini(peer)}<div class="online-dot" id="c-online-dot"></div>`;
   $('c-name').textContent='@'+peer;
   $('c-sub').textContent='ЛИЧНЫЙ ЧАТ';
+  $('call-btn').style.display='';
+  $('vcall-btn').style.display='';
   // Установить онлайн-статус в хедер
   const pd=presenceListeners[peer];
   $('c-online').classList.remove('show');
@@ -1496,11 +1675,11 @@ function openChat(peer){
   loadAvatar(peer, b64=>{ if(b64) $('c-av').innerHTML=`<img src="${b64}" alt="av"><div class="online-dot" id="c-online-dot"></div>`; });
   const ml=$('msglist'); ml.innerHTML='';
   (msgCache[CUR_CH]||[]).forEach(m=>appendMsg(m,false));
-  ml.scrollTop=ml.scrollHeight;
+  scrollToBottom(ml);
   loadReactionsForChat(CUR_CH);
   startReactionsListener(CUR_CH);
   goTo('chat');
-  setTimeout(()=>$('msginput').focus(),380);
+  setTimeout(()=>{ scrollToBottom(ml); $('msginput').focus(); },100);
 }
 
 // ════════════════════════════════════════
@@ -1649,7 +1828,7 @@ function appendMsg(msg,scroll=true){
   });
 
   $('msglist').appendChild(g);
-  if(scroll)$('msglist').scrollTop=$('msglist').scrollHeight;
+  if(scroll) scrollToBottom();
 }
 
 function buildBub(msg){
@@ -1696,10 +1875,11 @@ function buildBub(msg){
       const vmime=(msg.data.match(/data:([^;]+);/)||[])[1]||'video/mp4';
       return`<div class="vmsg-wrap" id="vw_${vid}" onclick="playVideo('${vid}')">
         ${fwdHeader}
+        <div class="vmsg-diamond-border"></div>
         <div class="vmsg-diamond" id="vd_${vid}">
           <video id="vv_${vid}" playsinline preload="none" style="display:none"></video>
-          <div id="vthumb_${vid}" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--g4)">
-            <span style="font-size:48px;color:var(--g0);opacity:.7">◈</span>
+          <div class="vmsg-thumb-ph" id="vthumb_${vid}">
+            <span style="font-size:52px;color:var(--g0);opacity:.6;filter:drop-shadow(0 0 8px var(--g1))">◈</span>
           </div>
         </div>
         <div class="vmsg-play" id="vp_${vid}">▶</div>
@@ -2296,17 +2476,19 @@ function openGroupChat(gid){
   listenPinned(gid);
   $('c-name').textContent=g.name;
   $('c-sub').textContent='ГРУППА · '+Object.keys(g.members).length+' уч.';
+  $('call-btn').style.display='none';
+  $('vcall-btn').style.display='none';
   $('c-online').classList.remove('show');
   $('c-online-dot').classList.remove('show');
   if(g.avatar){ $('c-av').innerHTML=`<img src="${g.avatar}" alt="g">`; }
   else { $('c-av').innerHTML=grpIni(g.name); }
   const ml=$('msglist'); ml.innerHTML='';
   (msgCache[gid]||[]).forEach(m=>appendMsg(m,false));
-  ml.scrollTop=ml.scrollHeight;
+  scrollToBottom(ml);
   loadReactionsForChat(gid);
   startReactionsListener(gid);
   goTo('chat');
-  setTimeout(()=>$('msginput').focus(),380);
+  setTimeout(()=>{ scrollToBottom(ml); $('msginput').focus(); },100);
 }
 
 function grpIni(name){ return (name||'G')[0].toUpperCase(); }
@@ -3242,7 +3424,6 @@ function sendVideo(){
 
   const dur=vidSec;
   const targetCH=vidChatCH;
-  const mime=vidRec.mimeType||'video/mp4';
 
   // Скрываем UI сразу
   $('vido-preview').srcObject=null;
@@ -3253,9 +3434,9 @@ function sendVideo(){
 
   // Запрашиваем последний чанк и останавливаем
   const rec=vidRec;
+  const mime=rec.mimeType||'video/webm';
   vidRec=null;
 
-  // Ждём onstop
   rec.onstop=()=>{
     const chunks=[...vidChunks];
     vidChunks=[];
@@ -3263,7 +3444,7 @@ function sendVideo(){
     const blob=new Blob(chunks,{type:mime});
 
     if(blob.size===0){
-      toast('⚠ Видео пустое'); return;
+      toast('⚠ Видео пустое — попробуй записать подольше'); return;
     }
     if(blob.size>950*1024){
       toast('⚠ Видео слишком тяжёлое, сократи длину'); return;
@@ -3288,112 +3469,354 @@ function sendVideo(){
     reader.readAsDataURL(blob);
   };
 
+  if(rec.state==='recording') rec.requestData(); // получаем последний чанк
   if(rec.state!=='inactive') rec.stop();
-  else rec.onstop(); // если уже остановлен — вызываем вручную
+  else rec.onstop();
 }
 
 // Воспроизведение видео-ромба
 const vidState={};
 const vidStore={}; // {vid: base64data}
 
+// Конвертация base64 data URL → ObjectURL
+function b64toObjectURL(b64){
+  const marker=b64.indexOf('base64,');
+  if(marker===-1) throw new Error('нет base64 маркера');
+  const rawB64=b64.slice(marker+7);
+  const mimeRaw=(b64.slice(0,marker).match(/data:([^;]+)/)||[])[1]||'video/webm';
+  const mime=(mimeRaw.includes('mp4')&&(b64.includes('vp8')||b64.includes('vp9')||b64.includes('opus')))
+    ?'video/webm':mimeRaw.split(';')[0];
+  // Чистим: только валидные base64 символы
+  const clean=rawB64.replace(/[^A-Za-z0-9+/=]/g,'');
+  // Добавляем padding
+  const padded=clean+'==='.slice(0,(4-clean.length%4)%4);
+  const binStr=atob(padded);
+  const bytes=new Uint8Array(binStr.length);
+  for(let i=0;i<binStr.length;i++) bytes[i]=binStr.charCodeAt(i);
+  const blob=new Blob([bytes],{type:mime});
+  return URL.createObjectURL(blob);
+}
+
 function playVideo(vid){
   const wrap=document.getElementById('vw_'+vid);
-  const diamond=document.getElementById('vd_'+vid);
   const videoEl=document.getElementById('vv_'+vid);
-  const playBtn=document.getElementById('vp_'+vid);
-  if(!wrap||!diamond||!videoEl) return;
+  const thumb=document.getElementById('vthumb_'+vid);
+  if(!wrap||!videoEl) return;
 
   const b64=vidStore[vid];
   if(!b64){ toast('⚠ Видео не найдено'); return; }
 
-  // Если уже играет — пауза
+  // Пауза если играет
   if(!videoEl.paused){
     videoEl.pause();
-    diamond.classList.remove('playing');
-    wrap.classList.remove('vmsg-playing');
-    playBtn.style.opacity='1';
-    vidState[vid]=false;
+    wrap.classList.remove('open');
     return;
   }
 
-  const thumb=document.getElementById('vthumb_'+vid);
-
-  // Если ObjectURL уже создан — сразу играем
-  if(videoEl._objUrl){
-    _startPlayback(vid, videoEl, diamond, wrap, playBtn, thumb);
-    return;
+  // Создаём ObjectURL если ещё нет
+  if(!videoEl._objUrl){
+    try{
+      videoEl._objUrl=b64toObjectURL(b64);
+    }catch(e){
+      toast('⚠ '+e.message.slice(0,50)); return;
+    }
+    videoEl.src=videoEl._objUrl;
+    if(thumb) thumb.style.display='none';
+    videoEl.style.display='block';
   }
 
-  // Конвертируем data URL → Blob через fetch (нативный способ, не требует atob)
-  toast('◈ Загрузка...', 2000);
-  // Напрямую передаём data URL — без fetch, без blob, без ObjectURL
-  openVidOverlay(b64);
-}
-
-function _startPlayback(vid, videoEl, diamond, wrap, playBtn, thumb){
-  diamond.classList.add('playing');
-  wrap.classList.add('vmsg-playing');
-  playBtn.style.opacity='0';
-  vidState[vid]=true;
+  // Раскрываем ромб
+  wrap.classList.add('open');
 
   videoEl.onended=()=>{
-    diamond.classList.remove('playing');
-    wrap.classList.remove('vmsg-playing');
-    playBtn.style.opacity='1';
-    vidState[vid]=false;
+    wrap.classList.remove('open');
     videoEl.currentTime=0;
   };
-
-  const onErr=()=>{
-    diamond.classList.remove('playing');
-    wrap.classList.remove('vmsg-playing');
-    playBtn.style.opacity='1';
-    vidState[vid]=false;
-    if(thumb){thumb.style.display=''; }
-    videoEl.style.display='none';
-    videoEl._objUrl=null;
-    videoEl.src='';
-  };
-
-  videoEl.onerror=onErr;
-
-  const tryPlay=()=>{
-    const p=videoEl.play();
-    if(p && p.catch) p.catch(e=>{
-      if(e.name==='AbortError') return;
-      onErr();
-    });
+  videoEl.onerror=()=>{
+    wrap.classList.remove('open');
+    const err=videoEl.error;
+    toast('⚠ Ошибка видео '+(err?'код'+err.code:''));
   };
 
   if(videoEl.readyState>=2){
-    tryPlay();
+    videoEl.play().catch(e=>{ if(e.name!=='AbortError') toast('⚠ '+e.message); });
   } else {
-    videoEl.addEventListener('loadeddata', tryPlay, {once:true});
-    videoEl.addEventListener('error', onErr, {once:true});
+    videoEl.addEventListener('loadeddata',()=>{
+      videoEl.play().catch(e=>{ if(e.name!=='AbortError') toast('⚠ '+e.message); });
+    },{once:true});
     videoEl.load();
   }
 }
 
-function openVidOverlay(b64){
-  const ov=$('vid-overlay');
-  const vel=$('vid-overlay-el');
-  ov.style.display='flex';
-  // Исправляем mime если нужно (vp8/vp9 = webm)
-  let url=b64;
-  if(b64.startsWith('data:video/mp4') && (b64.includes('vp8')||b64.includes('vp9')||b64.includes('opus'))){
-    url=b64.replace(/^data:video\/mp4[^,]*,/, 'data:video/webm;base64,');
+function openVidOverlay(){}
+function closeVidOverlay(){ $('vid-overlay').style.display='none'; }
+function doPlayVideo(){}
+
+// ════════════════════════════════════════
+//  CALLS  📞📹  (WebRTC)
+// ════════════════════════════════════════
+const STUN={iceServers:[
+  {urls:'stun:stun.l.google.com:19302'},
+  {urls:'stun:stun1.l.google.com:19302'},
+  {urls:'stun:stun.cloudflare.com:3478'},
+]};
+
+let pc=null, localStream=null;
+let callPeer='', callRole='', callRef=null;
+let callTimer=null, callSec=0;
+let callMuted=false, callCamOff=false;
+let callWithVideo=false;
+let pendingCandidates=[];
+
+function createPC(){
+  const p=new RTCPeerConnection(STUN);
+  p.onicecandidate=e=>{
+    if(!e.candidate||!callRef) return;
+    const key=callRole==='caller'?'callerCandidates':'calleeCandidates';
+    callRef.child(key).push(e.candidate.toJSON());
+  };
+  p.oniceconnectionstatechange=()=>{
+    if(p.iceConnectionState==='connected'||p.iceConnectionState==='completed') onCallActive();
+    if(p.iceConnectionState==='failed'){ toast('⚠ Соединение не удалось'); endCall(); }
+  };
+  p.ontrack=e=>{
+    const track=e.track;
+    if(track.kind==='audio'){
+      const audio=$('call-audio');
+      if(!audio.srcObject) audio.srcObject=new MediaStream();
+      audio.srcObject.addTrack(track);
+      audio.play().catch(()=>{});
+    } else if(track.kind==='video'){
+      const rv=$('call-video-remote');
+      if(!rv.srcObject) rv.srcObject=new MediaStream();
+      rv.srcObject.addTrack(track);
+      rv.style.display='block';
+      $('call-av').classList.add('has-video');
+    }
+  };
+  return p;
+}
+
+async function addPendingCandidates(){
+  for(const cand of pendingCandidates){
+    if(pc&&pc.remoteDescription)
+      await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
   }
-  vel.src=url;
+  pendingCandidates=[];
 }
 
-function closeVidOverlay(){
-  const vel=$('vid-overlay-el');
-  vel.pause();
-  vel.src='';
-  $('vid-overlay').style.display='none';
+// ── Начать звонок (withVideo=true/false) ──
+async function startCall(withVideo){
+  if(!CUR_PEER){toast('⚠ Открой личный чат');return;}
+  if(pc){toast('⚠ Звонок уже идёт');return;}
+  callPeer=CUR_PEER; callRole='caller'; callWithVideo=!!withVideo;
+  try{
+    localStream=await navigator.mediaDevices.getUserMedia({
+      audio:true, video:withVideo?{facingMode:'user',width:{ideal:640},height:{ideal:480}}:false
+    });
+  }catch(e){
+    toast('⚠ Нет доступа к '+(withVideo?'камере':'микрофону'));return;
+  }
+  if(withVideo){
+    const lv=$('call-video-local');
+    lv.srcObject=localStream; lv.style.display='block';
+  }
+  showCallScreen('outgoing');
+  const callId='call_'+ME_NICK+'_'+callPeer+'_'+Date.now();
+  callRef=db.ref('calls/'+callId);
+  pendingCandidates=[];
+  pc=createPC();
+  localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+  callRef.child('calleeCandidates').on('child_added',async snap=>{
+    const cand=snap.val(); if(!cand) return;
+    if(pc&&pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
+    else pendingCandidates.push(cand);
+  });
+  const offer=await pc.createOffer({offerToReceiveAudio:true,offerToReceiveVideo:true});
+  await pc.setLocalDescription(offer);
+  await callRef.set({
+    caller:ME_NICK,callee:callPeer,status:'ringing',
+    withVideo:!!withVideo,
+    offer:{type:offer.type,sdp:offer.sdp},ts:Date.now()
+  });
+  callRef.child('answer').on('value',async snap=>{
+    const ans=snap.val();
+    if(ans&&pc&&!pc.currentRemoteDescription){
+      await pc.setRemoteDescription(new RTCSessionDescription(ans));
+      await addPendingCandidates();
+    }
+  });
+  listenCallStatus();
+  setTimeout(()=>{if(callRole==='caller'&&callRef)endCall();},60000);
 }
 
-function doPlayVideo(){} // legacy stub
+// ── Входящие ──
+function listenIncomingCalls(){
+  db.ref('calls').on('child_added',snap=>{
+    const call=snap.val();
+    if(!call||call.callee!==ME_NICK) return;
+    if(call.status!=='ringing') return;
+    if(Date.now()-call.ts>30000) return;
+    if(pc) return;
+    callRef=snap.ref; callPeer=call.caller; callRole='callee';
+    callWithVideo=!!call.withVideo;
+    pendingCandidates=[];
+    callRef._offer=call.offer;
+    $('ib-name').textContent='@'+call.caller;
+    $('incoming-banner').classList.add('show');
+    showCallScreen('incoming', call.withVideo);
+    playRingtone(true);
+    listenCallStatus();
+  });
+}
+
+function listenCallStatus(){
+  if(!callRef) return;
+  callRef.child('status').on('value',snap=>{
+    const st=snap.val();
+    if(st==='ended'||st==='rejected') onCallEnded();
+  });
+}
+
+// ── Принять (withVideo) ──
+async function acceptCall(withVideo){
+  $('incoming-banner').classList.remove('show');
+  playRingtone(false);
+  callWithVideo=!!withVideo;
+  try{
+    localStream=await navigator.mediaDevices.getUserMedia({
+      audio:true, video:withVideo?{facingMode:'user',width:{ideal:640},height:{ideal:480}}:false
+    });
+  }catch(e){
+    // Если видео недоступно — принять только аудио
+    try{ localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false}); callWithVideo=false; }
+    catch(e2){ toast('⚠ Нет доступа к микрофону');return; }
+  }
+  if(callWithVideo){
+    const lv=$('call-video-local');
+    lv.srcObject=localStream; lv.style.display='block';
+  }
+  pc=createPC();
+  localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+  callRef.child('callerCandidates').on('child_added',async snap=>{
+    const cand=snap.val(); if(!cand) return;
+    if(pc&&pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
+    else pendingCandidates.push(cand);
+  });
+  await pc.setRemoteDescription(new RTCSessionDescription(callRef._offer));
+  await addPendingCandidates();
+  const answer=await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  await callRef.update({answer:{type:answer.type,sdp:answer.sdp},status:'active'});
+  showCallScreen('active');
+}
+
+function rejectCall(){
+  $('incoming-banner').classList.remove('show');
+  playRingtone(false);
+  if(callRef) callRef.update({status:'rejected'});
+  cleanupCall();
+}
+
+function endCall(){
+  if(callRef) callRef.update({status:'ended'});
+  cleanupCall();
+}
+
+function onCallActive(){
+  if(callTimer) return;
+  $('call-status').textContent='СОЕДИНЕНО';
+  $('call-btns-outgoing').style.display='none';
+  $('call-btns-incoming').style.display='none';
+  $('call-btns-active').style.display='flex';
+  $('call-timer').style.display='block';
+  callSec=0;
+  callTimer=setInterval(()=>{
+    callSec++;
+    const m=Math.floor(callSec/60),s=callSec%60;
+    $('call-timer').textContent=m+':'+(s<10?'0':'')+s;
+  },1000);
+  playRingtone(false);
+}
+
+function onCallEnded(){ cleanupCall(); toast('📵 Звонок завершён'); }
+
+function cleanupCall(){
+  clearInterval(callTimer); callTimer=null; callSec=0;
+  if(pc){pc.close();pc=null;}
+  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
+  $('call-audio').srcObject=null;
+  const rv=$('call-video-remote'); rv.srcObject=null; rv.style.display='none';
+  const lv=$('call-video-local'); lv.srcObject=null; lv.style.display='none';
+  $('call-av').classList.remove('has-video');
+  if(callRef){
+    callRef.child('status').off(); callRef.child('answer').off();
+    callRef.child('callerCandidates').off(); callRef.child('calleeCandidates').off();
+  }
+  callRef=null; callPeer=''; callRole=''; callWithVideo=false;
+  callMuted=false; callCamOff=false; pendingCandidates=[];
+  $('call-screen').classList.remove('show');
+  $('incoming-banner').classList.remove('show');
+  $('call-mic-btn').classList.remove('off');
+  $('call-cam-btn').classList.remove('off');
+  playRingtone(false);
+}
+
+function toggleCallMic(){
+  if(!localStream) return;
+  callMuted=!callMuted;
+  localStream.getAudioTracks().forEach(t=>t.enabled=!callMuted);
+  $('call-mic-btn').classList.toggle('off',callMuted);
+  $('call-mic-btn').textContent=callMuted?'🔇':'🎤';
+}
+
+function toggleCallCam(){
+  if(!localStream) return;
+  callCamOff=!callCamOff;
+  localStream.getVideoTracks().forEach(t=>t.enabled=!callCamOff);
+  $('call-cam-btn').classList.toggle('off',callCamOff);
+  $('call-cam-btn').textContent=callCamOff?'🚫':'📹';
+  $('call-video-local').style.opacity=callCamOff?'0.2':'1';
+}
+
+function showCallScreen(mode, withVideo){
+  $('call-screen').classList.add('show');
+  $('call-btns-incoming').style.display=mode==='incoming'?'flex':'none';
+  $('call-btns-outgoing').style.display=mode==='outgoing'?'flex':'none';
+  $('call-btns-active').style.display=mode==='active'?'flex':'none';
+  $('call-timer').style.display=mode==='active'?'block':'none';
+  $('call-name').textContent='@'+callPeer;
+  $('call-status').textContent=
+    mode==='incoming'?(withVideo?'ВИДЕОЗВОНОК':'ВХОДЯЩИЙ ЗВОНОК'):
+    mode==='active'?'СОЕДИНЕНО':'ВЫЗОВ...';
+  // Показываем/скрываем кнопку камеры
+  $('call-cam-btn').style.display=callWithVideo?'flex':'none';
+  const av=$('call-av');
+  av.textContent=ini(callPeer);
+  loadAvatar(callPeer,b64=>{if(b64)av.innerHTML=`<img src="${b64}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;});
+}
+
+let ringtoneCtx=null,ringtoneInterval=null;
+function playRingtone(on){
+  if(ringtoneInterval){clearInterval(ringtoneInterval);ringtoneInterval=null;}
+  if(!on) return;
+  const beep=()=>{
+    try{
+      if(!ringtoneCtx) ringtoneCtx=new(window.AudioContext||window.webkitAudioContext)();
+      if(ringtoneCtx.state==='suspended') ringtoneCtx.resume();
+      [[880,0,0.15],[660,0.2,0.15]].forEach(([freq,delay,dur])=>{
+        const o=ringtoneCtx.createOscillator();
+        const g=ringtoneCtx.createGain();
+        o.connect(g);g.connect(ringtoneCtx.destination);
+        o.frequency.value=freq;g.gain.value=0.25;
+        const t=ringtoneCtx.currentTime;
+        o.start(t+delay);o.stop(t+delay+dur);
+      });
+    }catch(e){}
+  };
+  beep();
+  ringtoneInterval=setInterval(beep,2000);
+}
 
 // ════════════════════════════════════════
 //  THEME SYSTEM
@@ -3545,6 +3968,11 @@ auth.onAuthStateChanged(user=>{
     // иначе просто ждём подключения
   }
 });
+</script>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
 </script>
 </body>
 </html>
