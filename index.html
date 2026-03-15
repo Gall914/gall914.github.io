@@ -519,6 +519,14 @@ input::placeholder{color:var(--dim)}
   transition:opacity .25s;padding-left:3px;
 }
 .vmsg-wrap.open .vmsg-play{opacity:0}
+/* Overlay */
+#vid-overlay{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.92);
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#vid-overlay-el{max-width:min(92vw,480px);max-height:70vh;border-radius:12px;background:#000}
+#vid-overlay-close{font-family:'VT323',monospace;font-size:18px;color:var(--g0);
+  background:transparent;border:1px solid var(--g2);padding:8px 32px;
+  cursor:pointer;letter-spacing:2px}
+#vid-overlay-close:active{background:var(--g3)}
 .vmsg-dur{
   position:absolute;bottom:2px;left:50%;
   transform:translateX(-50%);
@@ -1064,10 +1072,7 @@ input::placeholder{color:var(--dim)}
   <div class="call-name" id="call-name">—</div>
   <div class="call-status" id="call-status">СОЕДИНЕНИЕ...</div>
   <div class="call-timer" id="call-timer" style="display:none">0:00</div>
-  <audio id="call-audio" autoplay playsinline></audio>
-  <audio id="ringtone" loop>
-    <source src="data:audio/wav;base64,UklGRl9vT1dBVkVmbXQIBAAAAAABAAEARKwAAESsAAABAAgAZGF0YU" type="audio/wav">
-  </audio>
+  <audio id="call-audio" autoplay playsinline style="display:none"></audio>
   <div class="call-btns" id="call-btns-incoming" style="display:none">
     <button class="call-btn call-btn-end" onclick="rejectCall()" title="Отклонить">📵</button>
     <button class="call-btn call-btn-accept" onclick="acceptCall()" title="Принять">📞</button>
@@ -1113,7 +1118,7 @@ input::placeholder{color:var(--dim)}
 </div>
 
 <!-- VIDEO OVERLAY -->
-<div id="vid-overlay">
+<div id="vid-overlay" style="display:none">
   <video id="vid-overlay-el" controls playsinline></video>
   <button id="vid-overlay-close" onclick="closeVidOverlay()">[ ЗАКРЫТЬ ]</button>
 </div>
@@ -1539,6 +1544,13 @@ function prevText(m){
   return esc(m.text||'').slice(0,40);
 }
 
+function scrollToBottom(el){
+  const e=el||$('msglist');
+  e.scrollTop=e.scrollHeight+9999;
+  // Повторно после layout — для случаев с изображениями
+  requestAnimationFrame(()=>{ e.scrollTop=e.scrollHeight+9999; });
+}
+
 // ════════════════════════════════════════
 //  LISTEN MESSAGES  ← главный слушатель
 // ════════════════════════════════════════
@@ -1616,11 +1628,11 @@ function openChat(peer){
   loadAvatar(peer, b64=>{ if(b64) $('c-av').innerHTML=`<img src="${b64}" alt="av"><div class="online-dot" id="c-online-dot"></div>`; });
   const ml=$('msglist'); ml.innerHTML='';
   (msgCache[CUR_CH]||[]).forEach(m=>appendMsg(m,false));
-  ml.scrollTop=ml.scrollHeight;
+  scrollToBottom(ml);
   loadReactionsForChat(CUR_CH);
   startReactionsListener(CUR_CH);
   goTo('chat');
-  setTimeout(()=>$('msginput').focus(),380);
+  setTimeout(()=>{ scrollToBottom(ml); $('msginput').focus(); },100);
 }
 
 // ════════════════════════════════════════
@@ -1769,7 +1781,7 @@ function appendMsg(msg,scroll=true){
   });
 
   $('msglist').appendChild(g);
-  if(scroll)$('msglist').scrollTop=$('msglist').scrollHeight;
+  if(scroll) scrollToBottom();
 }
 
 function buildBub(msg){
@@ -2424,11 +2436,11 @@ function openGroupChat(gid){
   else { $('c-av').innerHTML=grpIni(g.name); }
   const ml=$('msglist'); ml.innerHTML='';
   (msgCache[gid]||[]).forEach(m=>appendMsg(m,false));
-  ml.scrollTop=ml.scrollHeight;
+  scrollToBottom(ml);
   loadReactionsForChat(gid);
   startReactionsListener(gid);
   goTo('chat');
-  setTimeout(()=>$('msginput').focus(),380);
+  setTimeout(()=>{ scrollToBottom(ml); $('msginput').focus(); },100);
 }
 
 function grpIni(name){ return (name||'G')[0].toUpperCase(); }
@@ -3491,151 +3503,172 @@ function doPlayVideo(){}
 // ════════════════════════════════════════
 //  CALLS  📞  (WebRTC)
 // ════════════════════════════════════════
-const STUN = {iceServers:[
+const STUN={iceServers:[
   {urls:'stun:stun.l.google.com:19302'},
   {urls:'stun:stun1.l.google.com:19302'},
+  {urls:'stun:stun.cloudflare.com:3478'},
 ]};
 
-let pc=null;           // RTCPeerConnection
-let localStream=null;  // MediaStream (mic)
-let callPeer='';       // с кем звоним
-let callRole='';       // 'caller' | 'callee'
-let callTimer=null;    // интервал таймера
-let callSec=0;
-let callMuted=false;
-let callRef=null;      // Firebase ref текущего звонка
+let pc=null, localStream=null;
+let callPeer='', callRole='', callRef=null;
+let callTimer=null, callSec=0, callMuted=false;
+let pendingCandidates=[]; // буфер кандидатов до setRemoteDescription
 
-// ── Инициировать звонок ──
+function createPC(){
+  const p=new RTCPeerConnection(STUN);
+
+  p.onicecandidate=e=>{
+    if(!e.candidate||!callRef) return;
+    const key=callRole==='caller'?'callerCandidates':'calleeCandidates';
+    callRef.child(key).push(e.candidate.toJSON());
+  };
+
+  p.oniceconnectionstatechange=()=>{
+    console.log('ICE:',p.iceConnectionState);
+    if(p.iceConnectionState==='connected'||p.iceConnectionState==='completed'){
+      onCallActive();
+    }
+    if(p.iceConnectionState==='failed'){
+      toast('⚠ Соединение не удалось (NAT/firewall)');
+      endCall();
+    }
+    if(p.iceConnectionState==='disconnected'){
+      toast('📵 Соединение прервано');
+    }
+  };
+
+  p.ontrack=e=>{
+    const audio=$('call-audio');
+    if(e.streams&&e.streams[0]){
+      audio.srcObject=e.streams[0];
+    } else {
+      const ms=new MediaStream([e.track]);
+      audio.srcObject=ms;
+    }
+    audio.play().catch(()=>{});
+  };
+
+  return p;
+}
+
+async function addPendingCandidates(){
+  for(const cand of pendingCandidates){
+    if(pc&&pc.remoteDescription){
+      await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
+    }
+  }
+  pendingCandidates=[];
+}
+
+// ── Начать звонок ──
 async function startCall(){
-  if(!CUR_PEER){ toast('⚠ Открой личный чат'); return; }
-  if(pc){ toast('⚠ Звонок уже идёт'); return; }
-
-  callPeer=CUR_PEER;
-  callRole='caller';
-
-  // Получаем микрофон
+  if(!CUR_PEER){toast('⚠ Открой личный чат');return;}
+  if(pc){toast('⚠ Звонок уже идёт');return;}
+  callPeer=CUR_PEER; callRole='caller';
   try{
     localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
   }catch(e){
-    toast('⚠ Нет доступа к микрофону'); return;
+    toast('⚠ Нет доступа к микрофону: '+e.message);return;
   }
-
   showCallScreen('outgoing');
-
-  // Создаём запись звонка в Firebase
-  const callId=ME_NICK+'__'+callPeer+'__'+Date.now();
+  const callId='call_'+ME_NICK+'_'+callPeer+'_'+Date.now();
   callRef=db.ref('calls/'+callId);
-
-  pc=new RTCPeerConnection(STUN);
+  pendingCandidates=[];
+  pc=createPC();
   localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
 
-  // Получаем удалённый аудио
-  pc.ontrack=e=>{
-    $('call-audio').srcObject=e.streams[0];
-  };
-
-  // Отправляем ICE кандидатов
-  pc.onicecandidate=e=>{
-    if(e.candidate) callRef.child('callerCandidates').push(e.candidate.toJSON());
-  };
-
-  // Создаём offer
-  const offer=await pc.createOffer();
-  await pc.setLocalDescription(offer);
-
-  await callRef.set({
-    caller: ME_NICK,
-    callee: callPeer,
-    status: 'ringing',
-    offer: {type:offer.type, sdp:offer.sdp},
-    ts: Date.now()
-  });
-
-  // Слушаем ответ
-  callRef.child('answer').on('value', async snap=>{
-    const ans=snap.val();
-    if(ans && pc && !pc.currentRemoteDescription){
-      await pc.setRemoteDescription(new RTCSessionDescription(ans));
+  // Слушаем кандидатов от callee — СРАЗУ
+  callRef.child('calleeCandidates').on('child_added',async snap=>{
+    const cand=snap.val(); if(!cand) return;
+    if(pc&&pc.remoteDescription){
+      await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
+    } else {
+      pendingCandidates.push(cand);
     }
   });
 
-  // Слушаем ICE кандидатов от callee
-  callRef.child('calleeCandidates').on('child_added', async snap=>{
-    const cand=snap.val();
-    if(cand && pc) await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
+  const offer=await pc.createOffer({offerToReceiveAudio:true});
+  await pc.setLocalDescription(offer);
+
+  await callRef.set({
+    caller:ME_NICK, callee:callPeer,
+    status:'ringing',
+    offer:{type:offer.type,sdp:offer.sdp},
+    ts:Date.now()
   });
 
-  // Слушаем статус
-  callRef.child('status').on('value', snap=>{
-    const st=snap.val();
-    if(st==='active') onCallActive();
-    if(st==='ended'||st==='rejected') onCallEnded();
+  // Слушаем answer
+  callRef.child('answer').on('value',async snap=>{
+    const ans=snap.val();
+    if(ans&&pc&&!pc.currentRemoteDescription){
+      await pc.setRemoteDescription(new RTCSessionDescription(ans));
+      await addPendingCandidates();
+    }
   });
 
-  // Автоотмена через 60 сек
-  setTimeout(()=>{ if(callRole==='caller'&&callRef) endCall(); }, 60000);
+  listenCallStatus();
+  setTimeout(()=>{if(callRole==='caller'&&callRef)endCall();},60000);
 }
 
-// ── Слушаем входящие звонки ──
+// ── Слушать входящие ──
 function listenIncomingCalls(){
-  db.ref('calls').orderByChild('callee').equalTo(ME_NICK).on('child_added', async snap=>{
+  // Слушаем звонки адресованные нам
+  db.ref('calls').on('child_added',snap=>{
     const call=snap.val();
-    if(!call||call.status!=='ringing') return;
-    if(Date.now()-call.ts>30000) return; // игнорируем старые
+    if(!call||call.callee!==ME_NICK) return;
+    if(call.status!=='ringing') return;
+    if(Date.now()-call.ts>30000) return;
+    if(pc) return; // уже в звонке
 
-    // Показываем баннер входящего звонка
     callRef=snap.ref;
     callPeer=call.caller;
     callRole='callee';
+    pendingCandidates=[];
+    callRef._offer=call.offer;
 
     $('ib-name').textContent='@'+call.caller;
     $('incoming-banner').classList.add('show');
-
-    // Показываем экран звонка
     showCallScreen('incoming');
-
-    // Воспроизводим рингтон (системный beep через AudioContext)
     playRingtone(true);
 
-    // Сохраняем offer для acceptCall
-    callRef._offerData=call.offer;
-
-    // Слушаем если caller завершил
-    callRef.child('status').on('value', snap=>{
-      const st=snap.val();
-      if(st==='ended'||st==='rejected') onCallEnded();
-    });
+    listenCallStatus();
   });
 }
 
-// ── Принять звонок ──
+function listenCallStatus(){
+  if(!callRef) return;
+  callRef.child('status').on('value',snap=>{
+    const st=snap.val();
+    if(st==='ended'||st==='rejected') onCallEnded();
+  });
+}
+
+// ── Принять ──
 async function acceptCall(){
   $('incoming-banner').classList.remove('show');
   playRingtone(false);
-
   try{
     localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
   }catch(e){
-    toast('⚠ Нет доступа к микрофону'); return;
+    toast('⚠ Нет доступа к микрофону: '+e.message);return;
   }
-
-  pc=new RTCPeerConnection(STUN);
+  pc=createPC();
   localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
 
-  pc.ontrack=e=>{ $('call-audio').srcObject=e.streams[0]; };
-
-  pc.onicecandidate=e=>{
-    if(e.candidate) callRef.child('calleeCandidates').push(e.candidate.toJSON());
-  };
-
-  // Слушаем ICE от caller
-  callRef.child('callerCandidates').on('child_added', async snap=>{
-    const cand=snap.val();
-    if(cand && pc) await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
+  // Слушаем кандидатов от caller — СРАЗУ
+  callRef.child('callerCandidates').on('child_added',async snap=>{
+    const cand=snap.val(); if(!cand) return;
+    if(pc&&pc.remoteDescription){
+      await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
+    } else {
+      pendingCandidates.push(cand);
+    }
   });
 
-  const offer=callRef._offerData;
+  const offer=callRef._offer;
   await pc.setRemoteDescription(new RTCSessionDescription(offer));
+  await addPendingCandidates();
+
   const answer=await pc.createAnswer();
   await pc.setLocalDescription(answer);
 
@@ -3643,11 +3676,10 @@ async function acceptCall(){
     answer:{type:answer.type,sdp:answer.sdp},
     status:'active'
   });
-
-  onCallActive();
+  showCallScreen('active');
 }
 
-// ── Отклонить входящий ──
+// ── Отклонить ──
 function rejectCall(){
   $('incoming-banner').classList.remove('show');
   playRingtone(false);
@@ -3655,102 +3687,98 @@ function rejectCall(){
   cleanupCall();
 }
 
-// ── Завершить звонок ──
+// ── Завершить ──
 function endCall(){
   if(callRef) callRef.update({status:'ended'});
   cleanupCall();
 }
 
-// ── Активный звонок ──
+// ── Активный ──
 function onCallActive(){
+  if(callTimer) return; // уже активен
   $('call-status').textContent='СОЕДИНЕНО';
   $('call-btns-outgoing').style.display='none';
   $('call-btns-incoming').style.display='none';
   $('call-btns-active').style.display='flex';
   $('call-timer').style.display='block';
   callSec=0;
-  clearInterval(callTimer);
   callTimer=setInterval(()=>{
     callSec++;
-    const m=Math.floor(callSec/60), s=callSec%60;
+    const m=Math.floor(callSec/60),s=callSec%60;
     $('call-timer').textContent=m+':'+(s<10?'0':'')+s;
   },1000);
   playRingtone(false);
 }
 
-// ── Звонок завершён ──
 function onCallEnded(){
   cleanupCall();
   toast('📵 Звонок завершён');
 }
 
-// ── Очистка ──
 function cleanupCall(){
   clearInterval(callTimer); callTimer=null; callSec=0;
-  if(pc){ pc.close(); pc=null; }
-  if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream=null; }
+  if(pc){pc.close();pc=null;}
+  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
   $('call-audio').srcObject=null;
-  if(callRef){ callRef.child('status').off(); callRef.child('answer').off();
-    callRef.child('callerCandidates').off(); callRef.child('calleeCandidates').off(); }
+  if(callRef){
+    callRef.child('status').off();
+    callRef.child('answer').off();
+    callRef.child('callerCandidates').off();
+    callRef.child('calleeCandidates').off();
+  }
   callRef=null; callPeer=''; callRole='';
-  callMuted=false;
+  callMuted=false; pendingCandidates=[];
   $('call-screen').classList.remove('show');
   $('incoming-banner').classList.remove('show');
+  $('call-mic-btn').classList.remove('muted');
+  $('call-mic-btn').textContent='🎤';
   playRingtone(false);
 }
 
-// ── Мьют микрофона ──
 function toggleCallMic(){
   if(!localStream) return;
   callMuted=!callMuted;
   localStream.getAudioTracks().forEach(t=>t.enabled=!callMuted);
-  $('call-mic-btn').classList.toggle('muted', callMuted);
+  $('call-mic-btn').classList.toggle('muted',callMuted);
   $('call-mic-btn').textContent=callMuted?'🔇':'🎤';
 }
 
-// ── Показать экран звонка ──
 function showCallScreen(mode){
   const scr=$('call-screen');
   scr.classList.add('show');
   $('call-btns-incoming').style.display=mode==='incoming'?'flex':'none';
   $('call-btns-outgoing').style.display=mode==='outgoing'?'flex':'none';
   $('call-btns-active').style.display=mode==='active'?'flex':'none';
-  $('call-timer').style.display='none';
+  $('call-timer').style.display=mode==='active'?'block':'none';
   $('call-name').textContent='@'+callPeer;
-  $('call-status').textContent=mode==='incoming'?'ВХОДЯЩИЙ ЗВОНОК':'ВЫЗОВ...';
-  // Аватарка
+  $('call-status').textContent=
+    mode==='incoming'?'ВХОДЯЩИЙ ЗВОНОК':
+    mode==='active'?'СОЕДИНЕНО':'ВЫЗОВ...';
   const av=$('call-av');
   av.textContent=ini(callPeer);
-  loadAvatar(callPeer, b64=>{ if(b64) av.innerHTML=`<img src="${b64}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`; });
+  loadAvatar(callPeer,b64=>{if(b64)av.innerHTML=`<img src="${b64}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;});
 }
 
-// ── Рингтон через Web Audio API ──
-let ringtoneCtx=null, ringtoneNodes=[];
+let ringtoneCtx=null,ringtoneInterval=null;
 function playRingtone(on){
-  ringtoneNodes.forEach(n=>{ try{n.stop();}catch(e){} });
-  ringtoneNodes=[];
+  if(ringtoneInterval){clearInterval(ringtoneInterval);ringtoneInterval=null;}
   if(!on) return;
-  try{
-    if(!ringtoneCtx) ringtoneCtx=new(window.AudioContext||window.webkitAudioContext)();
-    const play=()=>{
-      const o=ringtoneCtx.createOscillator();
-      const g=ringtoneCtx.createGain();
-      o.connect(g); g.connect(ringtoneCtx.destination);
-      o.frequency.value=880; g.gain.value=0.3;
-      o.start(); o.stop(ringtoneCtx.currentTime+0.2);
-      ringtoneNodes.push(o);
-      const o2=ringtoneCtx.createOscillator();
-      const g2=ringtoneCtx.createGain();
-      o2.connect(g2); g2.connect(ringtoneCtx.destination);
-      o2.frequency.value=660; g2.gain.value=0.3;
-      o2.start(ringtoneCtx.currentTime+0.25);
-      o2.stop(ringtoneCtx.currentTime+0.45);
-      ringtoneNodes.push(o2);
-    };
-    play();
-    const id=setInterval(play, 2000);
-    ringtoneNodes.push({stop:()=>clearInterval(id)});
-  }catch(e){}
+  const beep=()=>{
+    try{
+      if(!ringtoneCtx) ringtoneCtx=new(window.AudioContext||window.webkitAudioContext)();
+      if(ringtoneCtx.state==='suspended') ringtoneCtx.resume();
+      [[880,0,0.15],[660,0.2,0.15]].forEach(([freq,delay,dur])=>{
+        const o=ringtoneCtx.createOscillator();
+        const g=ringtoneCtx.createGain();
+        o.connect(g);g.connect(ringtoneCtx.destination);
+        o.frequency.value=freq;g.gain.value=0.25;
+        const t=ringtoneCtx.currentTime;
+        o.start(t+delay);o.stop(t+delay+dur);
+      });
+    }catch(e){}
+  };
+  beep();
+  ringtoneInterval=setInterval(beep,2000);
 }
 
 // ════════════════════════════════════════
