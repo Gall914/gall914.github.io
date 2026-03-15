@@ -340,33 +340,53 @@ input::placeholder{color:var(--dim)}
 @keyframes pop{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:scale(1)}}
 
 /* ── CALLS ── */
-#call-screen{position:fixed;inset:0;z-index:1500;background:var(--bg);
-  display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+#call-screen{position:fixed;inset:0;z-index:1500;background:#000;
+  display:none;flex-direction:column}
 #call-screen.show{display:flex}
-.call-avatar{width:96px;height:96px;border-radius:50%;background:var(--g3);
+/* Видео фон — удалённый собеседник */
+#call-video-remote{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;background:#111;display:block}
+/* Своё видео — маленький пикчер-ин-пикчер */
+#call-video-local{position:absolute;top:calc(var(--top)+12px);right:12px;
+  width:90px;height:120px;object-fit:cover;border-radius:12px;
+  border:2px solid var(--g2);background:#222;z-index:2;
+  transform:scaleX(-1); /* зеркалим selfie */
+  display:none}
+/* Оверлей поверх видео */
+#call-overlay{position:absolute;inset:0;z-index:3;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:space-between;padding:calc(var(--top)+24px) 0 calc(var(--bot)+24px)}
+/* Верхняя часть — имя и статус */
+.call-top{display:flex;flex-direction:column;align-items:center;gap:10px}
+.call-avatar{width:88px;height:88px;border-radius:50%;background:var(--g3);
   border:3px solid var(--g1);display:flex;align-items:center;justify-content:center;
-  font-family:'VT323',monospace;font-size:40px;color:var(--g0);overflow:hidden;
-  box-shadow:0 0 0 0 var(--g1);animation:callpulse 2s infinite}
+  font-family:'VT323',monospace;font-size:38px;color:var(--g0);overflow:hidden;
+  animation:callpulse 2s infinite}
+.call-avatar.has-video{display:none} /* скрываем если есть видео */
 @keyframes callpulse{0%,100%{box-shadow:0 0 0 0 rgba(51,255,0,.4)}
   50%{box-shadow:0 0 0 16px rgba(51,255,0,0)}}
-.call-name{font-family:'VT323',monospace;font-size:28px;color:var(--g0);letter-spacing:3px}
-.call-status{font-size:11px;color:var(--dim);letter-spacing:2px}
-.call-timer{font-family:'VT323',monospace;font-size:22px;color:var(--g1);letter-spacing:2px}
-.call-btns{display:flex;gap:24px;margin-top:16px}
-.call-btn{width:64px;height:64px;border-radius:50%;border:none;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:24px;
-  transition:transform .15s,opacity .15s}
-.call-btn:active{transform:scale(.88)}
+.call-name{font-family:'VT323',monospace;font-size:26px;color:#fff;
+  letter-spacing:3px;text-shadow:0 1px 8px rgba(0,0,0,.8)}
+.call-status{font-size:11px;color:rgba(255,255,255,.7);letter-spacing:2px}
+.call-timer{font-family:'VT323',monospace;font-size:20px;color:var(--g1);
+  letter-spacing:2px;display:none}
+/* Кнопки */
+.call-btns{display:flex;gap:20px;align-items:center}
+.call-btn{width:62px;height:62px;border-radius:50%;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  transition:transform .15s;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+.call-btn:active{transform:scale(.85)}
 .call-btn-end{background:#e53935}
 .call-btn-accept{background:#43a047}
-.call-btn-mic{background:var(--s2);border:1px solid var(--bdr);color:var(--g0)}
-.call-btn-mic.muted{background:var(--red);border-color:var(--red)}
+.call-btn-icon{background:rgba(255,255,255,.15);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.2);color:#fff;font-size:20px}
+.call-btn-icon.off{background:rgba(255,64,64,.4);border-color:rgba(255,64,64,.6)}
 /* Кнопка звонка в хедере */
-.call-hdr-btn{background:transparent;border:none;color:var(--g0);font-size:20px;
+.call-hdr-btn{background:transparent;border:none;color:var(--g0);font-size:18px;
   cursor:pointer;padding:6px;opacity:.8;transition:opacity .15s}
 .call-hdr-btn:active{opacity:.5}
 /* Входящий звонок — мини баннер */
-#incoming-banner{position:fixed;top:calc(var(--top) + 8px);left:50%;
+#incoming-banner{position:fixed;top:calc(var(--top)+8px);left:50%;
   transform:translateX(-50%);z-index:1600;
   background:var(--s1);border:1px solid var(--g1);
   padding:10px 16px;display:none;align-items:center;gap:12px;
@@ -375,6 +395,8 @@ input::placeholder{color:var(--dim)}
 #incoming-banner .ib-name{font-family:'VT323',monospace;font-size:18px;
   color:var(--g0);letter-spacing:1px;flex:1}
 #incoming-banner .ib-sub{font-size:10px;color:var(--dim);letter-spacing:1px}
+/* Кнопка видеозвонка в хедере */
+.call-hdr-btn.video{font-size:16px}
 
 /* ── READ RECEIPTS ── */
 .meta{font-size:10px;color:var(--dim);padding:0 3px;display:flex;align-items:center;gap:4px}
@@ -857,7 +879,8 @@ input::placeholder{color:var(--dim)}
           </div>
           <div class="c-sub" id="c-sub">RETROMESH · REALTIME</div>
         </div>
-        <button class="call-hdr-btn" id="call-btn" onclick="startCall()" title="Позвонить">📞</button>
+        <button class="call-hdr-btn" id="call-btn" onclick="startCall(false)" title="Аудиозвонок">📞</button>
+        <button class="call-hdr-btn video" id="vcall-btn" onclick="startCall(true)" title="Видеозвонок">📹</button>
         <button class="backbtn" onclick="toggleSearchBar()" title="Поиск" style="font-size:16px">🔍</button>
       </div>
       <!-- Search bar -->
@@ -1068,21 +1091,40 @@ input::placeholder{color:var(--dim)}
 
 <!-- CALL SCREEN -->
 <div id="call-screen">
-  <div class="call-avatar" id="call-av">?</div>
-  <div class="call-name" id="call-name">—</div>
-  <div class="call-status" id="call-status">СОЕДИНЕНИЕ...</div>
-  <div class="call-timer" id="call-timer" style="display:none">0:00</div>
+  <!-- Видео удалённого собеседника — фон -->
+  <video id="call-video-remote" autoplay playsinline></video>
+  <!-- Своё видео — pip -->
+  <video id="call-video-local" autoplay playsinline muted></video>
+  <!-- Аудио -->
   <audio id="call-audio" autoplay playsinline style="display:none"></audio>
-  <div class="call-btns" id="call-btns-incoming" style="display:none">
-    <button class="call-btn call-btn-end" onclick="rejectCall()" title="Отклонить">📵</button>
-    <button class="call-btn call-btn-accept" onclick="acceptCall()" title="Принять">📞</button>
-  </div>
-  <div class="call-btns" id="call-btns-active" style="display:none">
-    <button class="call-btn call-btn-mic" id="call-mic-btn" onclick="toggleCallMic()" title="Микрофон">🎤</button>
-    <button class="call-btn call-btn-end" onclick="endCall()" title="Завершить">📵</button>
-  </div>
-  <div class="call-btns" id="call-btns-outgoing" style="display:none">
-    <button class="call-btn call-btn-end" onclick="endCall()" title="Отменить">📵</button>
+
+  <!-- Оверлей -->
+  <div id="call-overlay">
+    <div class="call-top">
+      <div class="call-avatar" id="call-av">?</div>
+      <div class="call-name" id="call-name">—</div>
+      <div class="call-status" id="call-status">СОЕДИНЕНИЕ...</div>
+      <div class="call-timer" id="call-timer">0:00</div>
+    </div>
+
+    <!-- Кнопки входящего -->
+    <div class="call-btns" id="call-btns-incoming" style="display:none">
+      <button class="call-btn call-btn-end" onclick="rejectCall()">📵</button>
+      <button class="call-btn call-btn-accept" onclick="acceptCall(false)">📞</button>
+      <button class="call-btn call-btn-accept" style="background:#1565c0" onclick="acceptCall(true)">📹</button>
+    </div>
+
+    <!-- Кнопки исходящего -->
+    <div class="call-btns" id="call-btns-outgoing" style="display:none">
+      <button class="call-btn call-btn-end" onclick="endCall()">📵</button>
+    </div>
+
+    <!-- Кнопки активного звонка -->
+    <div class="call-btns" id="call-btns-active" style="display:none">
+      <button class="call-btn call-btn-icon" id="call-mic-btn" onclick="toggleCallMic()">🎤</button>
+      <button class="call-btn call-btn-icon" id="call-cam-btn" onclick="toggleCallCam()">📹</button>
+      <button class="call-btn call-btn-end" onclick="endCall()">📵</button>
+    </div>
   </div>
 </div>
 
@@ -1621,6 +1663,7 @@ function openChat(peer){
   $('c-name').textContent='@'+peer;
   $('c-sub').textContent='ЛИЧНЫЙ ЧАТ';
   $('call-btn').style.display='';
+  $('vcall-btn').style.display='';
   // Установить онлайн-статус в хедер
   const pd=presenceListeners[peer];
   $('c-online').classList.remove('show');
@@ -2430,6 +2473,7 @@ function openGroupChat(gid){
   $('c-name').textContent=g.name;
   $('c-sub').textContent='ГРУППА · '+Object.keys(g.members).length+' уч.';
   $('call-btn').style.display='none';
+  $('vcall-btn').style.display='none';
   $('c-online').classList.remove('show');
   $('c-online-dot').classList.remove('show');
   if(g.avatar){ $('c-av').innerHTML=`<img src="${g.avatar}" alt="g">`; }
@@ -3501,7 +3545,7 @@ function closeVidOverlay(){ $('vid-overlay').style.display='none'; }
 function doPlayVideo(){}
 
 // ════════════════════════════════════════
-//  CALLS  📞  (WebRTC)
+//  CALLS  📞📹  (WebRTC)
 // ════════════════════════════════════════
 const STUN={iceServers:[
   {urls:'stun:stun.l.google.com:19302'},
@@ -3511,64 +3555,63 @@ const STUN={iceServers:[
 
 let pc=null, localStream=null;
 let callPeer='', callRole='', callRef=null;
-let callTimer=null, callSec=0, callMuted=false;
-let pendingCandidates=[]; // буфер кандидатов до setRemoteDescription
+let callTimer=null, callSec=0;
+let callMuted=false, callCamOff=false;
+let callWithVideo=false;
+let pendingCandidates=[];
 
 function createPC(){
   const p=new RTCPeerConnection(STUN);
-
   p.onicecandidate=e=>{
     if(!e.candidate||!callRef) return;
     const key=callRole==='caller'?'callerCandidates':'calleeCandidates';
     callRef.child(key).push(e.candidate.toJSON());
   };
-
   p.oniceconnectionstatechange=()=>{
-    console.log('ICE:',p.iceConnectionState);
-    if(p.iceConnectionState==='connected'||p.iceConnectionState==='completed'){
-      onCallActive();
-    }
-    if(p.iceConnectionState==='failed'){
-      toast('⚠ Соединение не удалось (NAT/firewall)');
-      endCall();
-    }
-    if(p.iceConnectionState==='disconnected'){
-      toast('📵 Соединение прервано');
-    }
+    if(p.iceConnectionState==='connected'||p.iceConnectionState==='completed') onCallActive();
+    if(p.iceConnectionState==='failed'){ toast('⚠ Соединение не удалось'); endCall(); }
   };
-
   p.ontrack=e=>{
-    const audio=$('call-audio');
-    if(e.streams&&e.streams[0]){
-      audio.srcObject=e.streams[0];
-    } else {
-      const ms=new MediaStream([e.track]);
-      audio.srcObject=ms;
+    const track=e.track;
+    if(track.kind==='audio'){
+      const audio=$('call-audio');
+      if(!audio.srcObject) audio.srcObject=new MediaStream();
+      audio.srcObject.addTrack(track);
+      audio.play().catch(()=>{});
+    } else if(track.kind==='video'){
+      const rv=$('call-video-remote');
+      if(!rv.srcObject) rv.srcObject=new MediaStream();
+      rv.srcObject.addTrack(track);
+      rv.style.display='block';
+      $('call-av').classList.add('has-video');
     }
-    audio.play().catch(()=>{});
   };
-
   return p;
 }
 
 async function addPendingCandidates(){
   for(const cand of pendingCandidates){
-    if(pc&&pc.remoteDescription){
+    if(pc&&pc.remoteDescription)
       await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
-    }
   }
   pendingCandidates=[];
 }
 
-// ── Начать звонок ──
-async function startCall(){
+// ── Начать звонок (withVideo=true/false) ──
+async function startCall(withVideo){
   if(!CUR_PEER){toast('⚠ Открой личный чат');return;}
   if(pc){toast('⚠ Звонок уже идёт');return;}
-  callPeer=CUR_PEER; callRole='caller';
+  callPeer=CUR_PEER; callRole='caller'; callWithVideo=!!withVideo;
   try{
-    localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    localStream=await navigator.mediaDevices.getUserMedia({
+      audio:true, video:withVideo?{facingMode:'user',width:{ideal:640},height:{ideal:480}}:false
+    });
   }catch(e){
-    toast('⚠ Нет доступа к микрофону: '+e.message);return;
+    toast('⚠ Нет доступа к '+(withVideo?'камере':'микрофону'));return;
+  }
+  if(withVideo){
+    const lv=$('call-video-local');
+    lv.srcObject=localStream; lv.style.display='block';
   }
   showCallScreen('outgoing');
   const callId='call_'+ME_NICK+'_'+callPeer+'_'+Date.now();
@@ -3576,28 +3619,18 @@ async function startCall(){
   pendingCandidates=[];
   pc=createPC();
   localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
-
-  // Слушаем кандидатов от callee — СРАЗУ
   callRef.child('calleeCandidates').on('child_added',async snap=>{
     const cand=snap.val(); if(!cand) return;
-    if(pc&&pc.remoteDescription){
-      await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
-    } else {
-      pendingCandidates.push(cand);
-    }
+    if(pc&&pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
+    else pendingCandidates.push(cand);
   });
-
-  const offer=await pc.createOffer({offerToReceiveAudio:true});
+  const offer=await pc.createOffer({offerToReceiveAudio:true,offerToReceiveVideo:true});
   await pc.setLocalDescription(offer);
-
   await callRef.set({
-    caller:ME_NICK, callee:callPeer,
-    status:'ringing',
-    offer:{type:offer.type,sdp:offer.sdp},
-    ts:Date.now()
+    caller:ME_NICK,callee:callPeer,status:'ringing',
+    withVideo:!!withVideo,
+    offer:{type:offer.type,sdp:offer.sdp},ts:Date.now()
   });
-
-  // Слушаем answer
   callRef.child('answer').on('value',async snap=>{
     const ans=snap.val();
     if(ans&&pc&&!pc.currentRemoteDescription){
@@ -3605,32 +3638,26 @@ async function startCall(){
       await addPendingCandidates();
     }
   });
-
   listenCallStatus();
   setTimeout(()=>{if(callRole==='caller'&&callRef)endCall();},60000);
 }
 
-// ── Слушать входящие ──
+// ── Входящие ──
 function listenIncomingCalls(){
-  // Слушаем звонки адресованные нам
   db.ref('calls').on('child_added',snap=>{
     const call=snap.val();
     if(!call||call.callee!==ME_NICK) return;
     if(call.status!=='ringing') return;
     if(Date.now()-call.ts>30000) return;
-    if(pc) return; // уже в звонке
-
-    callRef=snap.ref;
-    callPeer=call.caller;
-    callRole='callee';
+    if(pc) return;
+    callRef=snap.ref; callPeer=call.caller; callRole='callee';
+    callWithVideo=!!call.withVideo;
     pendingCandidates=[];
     callRef._offer=call.offer;
-
     $('ib-name').textContent='@'+call.caller;
     $('incoming-banner').classList.add('show');
-    showCallScreen('incoming');
+    showCallScreen('incoming', call.withVideo);
     playRingtone(true);
-
     listenCallStatus();
   });
 }
@@ -3643,43 +3670,39 @@ function listenCallStatus(){
   });
 }
 
-// ── Принять ──
-async function acceptCall(){
+// ── Принять (withVideo) ──
+async function acceptCall(withVideo){
   $('incoming-banner').classList.remove('show');
   playRingtone(false);
+  callWithVideo=!!withVideo;
   try{
-    localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    localStream=await navigator.mediaDevices.getUserMedia({
+      audio:true, video:withVideo?{facingMode:'user',width:{ideal:640},height:{ideal:480}}:false
+    });
   }catch(e){
-    toast('⚠ Нет доступа к микрофону: '+e.message);return;
+    // Если видео недоступно — принять только аудио
+    try{ localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false}); callWithVideo=false; }
+    catch(e2){ toast('⚠ Нет доступа к микрофону');return; }
+  }
+  if(callWithVideo){
+    const lv=$('call-video-local');
+    lv.srcObject=localStream; lv.style.display='block';
   }
   pc=createPC();
   localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
-
-  // Слушаем кандидатов от caller — СРАЗУ
   callRef.child('callerCandidates').on('child_added',async snap=>{
     const cand=snap.val(); if(!cand) return;
-    if(pc&&pc.remoteDescription){
-      await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
-    } else {
-      pendingCandidates.push(cand);
-    }
+    if(pc&&pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
+    else pendingCandidates.push(cand);
   });
-
-  const offer=callRef._offer;
-  await pc.setRemoteDescription(new RTCSessionDescription(offer));
+  await pc.setRemoteDescription(new RTCSessionDescription(callRef._offer));
   await addPendingCandidates();
-
   const answer=await pc.createAnswer();
   await pc.setLocalDescription(answer);
-
-  await callRef.update({
-    answer:{type:answer.type,sdp:answer.sdp},
-    status:'active'
-  });
+  await callRef.update({answer:{type:answer.type,sdp:answer.sdp},status:'active'});
   showCallScreen('active');
 }
 
-// ── Отклонить ──
 function rejectCall(){
   $('incoming-banner').classList.remove('show');
   playRingtone(false);
@@ -3687,15 +3710,13 @@ function rejectCall(){
   cleanupCall();
 }
 
-// ── Завершить ──
 function endCall(){
   if(callRef) callRef.update({status:'ended'});
   cleanupCall();
 }
 
-// ── Активный ──
 function onCallActive(){
-  if(callTimer) return; // уже активен
+  if(callTimer) return;
   $('call-status').textContent='СОЕДИНЕНО';
   $('call-btns-outgoing').style.display='none';
   $('call-btns-incoming').style.display='none';
@@ -3710,28 +3731,26 @@ function onCallActive(){
   playRingtone(false);
 }
 
-function onCallEnded(){
-  cleanupCall();
-  toast('📵 Звонок завершён');
-}
+function onCallEnded(){ cleanupCall(); toast('📵 Звонок завершён'); }
 
 function cleanupCall(){
   clearInterval(callTimer); callTimer=null; callSec=0;
   if(pc){pc.close();pc=null;}
   if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
   $('call-audio').srcObject=null;
+  const rv=$('call-video-remote'); rv.srcObject=null; rv.style.display='none';
+  const lv=$('call-video-local'); lv.srcObject=null; lv.style.display='none';
+  $('call-av').classList.remove('has-video');
   if(callRef){
-    callRef.child('status').off();
-    callRef.child('answer').off();
-    callRef.child('callerCandidates').off();
-    callRef.child('calleeCandidates').off();
+    callRef.child('status').off(); callRef.child('answer').off();
+    callRef.child('callerCandidates').off(); callRef.child('calleeCandidates').off();
   }
-  callRef=null; callPeer=''; callRole='';
-  callMuted=false; pendingCandidates=[];
+  callRef=null; callPeer=''; callRole=''; callWithVideo=false;
+  callMuted=false; callCamOff=false; pendingCandidates=[];
   $('call-screen').classList.remove('show');
   $('incoming-banner').classList.remove('show');
-  $('call-mic-btn').classList.remove('muted');
-  $('call-mic-btn').textContent='🎤';
+  $('call-mic-btn').classList.remove('off');
+  $('call-cam-btn').classList.remove('off');
   playRingtone(false);
 }
 
@@ -3739,21 +3758,31 @@ function toggleCallMic(){
   if(!localStream) return;
   callMuted=!callMuted;
   localStream.getAudioTracks().forEach(t=>t.enabled=!callMuted);
-  $('call-mic-btn').classList.toggle('muted',callMuted);
+  $('call-mic-btn').classList.toggle('off',callMuted);
   $('call-mic-btn').textContent=callMuted?'🔇':'🎤';
 }
 
-function showCallScreen(mode){
-  const scr=$('call-screen');
-  scr.classList.add('show');
+function toggleCallCam(){
+  if(!localStream) return;
+  callCamOff=!callCamOff;
+  localStream.getVideoTracks().forEach(t=>t.enabled=!callCamOff);
+  $('call-cam-btn').classList.toggle('off',callCamOff);
+  $('call-cam-btn').textContent=callCamOff?'🚫':'📹';
+  $('call-video-local').style.opacity=callCamOff?'0.2':'1';
+}
+
+function showCallScreen(mode, withVideo){
+  $('call-screen').classList.add('show');
   $('call-btns-incoming').style.display=mode==='incoming'?'flex':'none';
   $('call-btns-outgoing').style.display=mode==='outgoing'?'flex':'none';
   $('call-btns-active').style.display=mode==='active'?'flex':'none';
   $('call-timer').style.display=mode==='active'?'block':'none';
   $('call-name').textContent='@'+callPeer;
   $('call-status').textContent=
-    mode==='incoming'?'ВХОДЯЩИЙ ЗВОНОК':
+    mode==='incoming'?(withVideo?'ВИДЕОЗВОНОК':'ВХОДЯЩИЙ ЗВОНОК'):
     mode==='active'?'СОЕДИНЕНО':'ВЫЗОВ...';
+  // Показываем/скрываем кнопку камеры
+  $('call-cam-btn').style.display=callWithVideo?'flex':'none';
   const av=$('call-av');
   av.textContent=ini(callPeer);
   loadAvatar(callPeer,b64=>{if(b64)av.innerHTML=`<img src="${b64}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;});
