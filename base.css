@@ -1,0 +1,39 @@
+/* RetroMesh — Основа: переменные, оболочка, верхняя панель, экраны */
+:root{
+  --bg:#050805;--s1:#0b100b;--s2:#0e160e;--bdr:#1a301a;
+  --g0:#33ff00;--g1:#1fcc00;--g2:#0d6600;--g3:#063300;--g4:#031a00;
+  --red:#ff4040;--amb:#ffb300;--txt:#c8e8c8;--dim:#3d5c3d;
+  --scan:rgba(51,255,0,.014);
+  --top:env(safe-area-inset-top,0px);--bot:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);overflow:hidden}
+body{position:fixed;inset:0;display:flex;flex-direction:column;font-family:'Share Tech Mono',monospace;color:var(--txt);-webkit-font-smoothing:antialiased}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,var(--scan) 2px,var(--scan) 4px)}
+
+/* ── SHELL ── */
+#shell{display:flex;flex-direction:column;height:100%;width:100%;max-width:480px;
+  margin:0 auto;border-left:1px solid var(--bdr);border-right:1px solid var(--bdr);
+  position:relative;z-index:1;overflow:hidden}
+
+/* ── TOPBAR ── */
+#topbar{flex-shrink:0;background:var(--s1);border-bottom:2px solid var(--g2);
+  padding-top:var(--top);height:calc(var(--top) + 54px);
+  display:flex;align-items:center;padding:0 16px;padding-top:var(--top);
+  justify-content:space-between;box-shadow:0 0 24px rgba(51,255,0,.08)}
+.logo{font-family:'VT323',monospace;font-size:28px;letter-spacing:5px;
+  color:var(--g0);text-shadow:0 0 14px var(--g0)}
+.conn{display:flex;align-items:center;gap:8px}
+#dot{width:8px;height:8px;border-radius:50%;background:var(--dim);transition:all .5s}
+#dot.on{background:var(--g0);box-shadow:0 0 8px var(--g0);animation:blink 3s infinite}
+#dot.off{background:var(--red);box-shadow:0 0 6px var(--red)}
+#dot.wait{background:var(--amb);box-shadow:0 0 6px var(--amb);animation:blink 1s infinite}
+#clabel{font-size:10px;color:var(--dim);letter-spacing:2px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── SCREENS ── */
+#screens{flex:1;overflow:hidden;position:relative}
+.scr{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
+.scr.on{display:flex}
+
