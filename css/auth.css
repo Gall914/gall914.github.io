@@ -1,0 +1,53 @@
+/* RetroMesh — Экран входа, регистрации и ввода кода */
+/* ── LOGIN ── */
+#s-login{justify-content:center;align-items:center;padding:20px}
+.card{width:100%;max-width:360px;border:1px solid var(--g2);background:var(--s1);
+  box-shadow:0 0 40px rgba(51,255,0,.06)}
+.card-head{background:var(--g0);color:var(--bg);font-family:'VT323',monospace;
+  font-size:21px;letter-spacing:3px;padding:11px 16px}
+.card-body{padding:20px;display:flex;flex-direction:column;gap:12px}
+.tabs{display:flex;border:1px solid var(--g3)}
+.tab{flex:1;padding:10px;font-family:'VT323',monospace;font-size:18px;letter-spacing:2px;
+  text-align:center;cursor:pointer;color:var(--dim);background:transparent;border:none}
+.tab.act{background:var(--g3);color:var(--g0)}
+.lbl{font-size:10px;color:var(--g1);letter-spacing:2px;margin-bottom:5px;display:block}
+.lbl::before{content:'// ';color:var(--g3)}
+input[type=text],input[type=password],input[type=email]{
+  width:100%;background:var(--bg);border:1px solid var(--g3);border-bottom-color:var(--g2);
+  color:var(--g0);font-family:'Share Tech Mono',monospace;font-size:15px;
+  padding:12px 13px;outline:none;caret-color:var(--g0);
+  -webkit-appearance:none;border-radius:0;transition:border-color .2s}
+input:focus{border-color:var(--g1);box-shadow:0 0 12px rgba(51,255,0,.1)}
+input::placeholder{color:var(--dim)}
+.errtxt{font-size:11px;color:var(--red);min-height:16px;text-align:center;line-height:1.5}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;
+  background:transparent;border:1px solid var(--g1);color:var(--g0);
+  font-family:'VT323',monospace;font-size:20px;letter-spacing:2px;
+  padding:14px;cursor:pointer;width:100%;min-height:52px;
+  transition:background .15s;-webkit-appearance:none;user-select:none}
+.btn:active{background:rgba(51,255,0,.1)}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.btn.danger:active{background:rgba(255,64,64,.1)}
+.hint-txt{font-size:10px;color:var(--dim);text-align:center;line-height:1.8}
+.spin{width:18px;height:18px;border:2px solid var(--g3);border-top-color:var(--g0);
+  border-radius:50%;animation:rot .7s linear infinite;flex-shrink:0}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ── VERIFY STEP ── */
+#form-verify{display:none}
+.code-row{display:flex;gap:8px;justify-content:center;margin:4px 0}
+.code-row input{
+  width:54px;height:62px;text-align:center;font-family:'VT323',monospace;
+  font-size:32px;letter-spacing:0;caret-color:var(--g0);
+  background:var(--bg);border:1px solid var(--g3);border-bottom-color:var(--g2);
+  color:var(--g0);outline:none;-webkit-appearance:none;border-radius:0;
+  transition:border-color .2s,box-shadow .2s}
+.code-row input:focus{border-color:var(--g1);box-shadow:0 0 14px rgba(51,255,0,.15)}
+.code-row input.filled{border-color:var(--g2)}
+.verify-hint{font-size:10px;color:var(--dim);text-align:center;line-height:1.9}
+.verify-hint span{color:var(--g1)}
+.resend-btn{background:transparent;border:none;color:var(--g2);font-family:'Share Tech Mono',monospace;
+  font-size:11px;cursor:pointer;letter-spacing:1px;text-decoration:underline;padding:0}
+.resend-btn:active{color:var(--g0)}
+.resend-btn:disabled{color:var(--dim);cursor:default;text-decoration:none}
+
